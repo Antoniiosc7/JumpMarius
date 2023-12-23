@@ -1,40 +1,50 @@
 import pygame
 from entities import PhysicsEntity
-from utils import load_image
+from utils import load_image, load_images, load_image1
 import sys
 import menu
+from tilemap import Tilemap
 
 class Juego:
     def __init__(self):
         pygame.init()
         
-        pygame.display.set_caption("Marius Game")
+        pygame.display.set_caption("Jump Marius")
         self.screen = pygame.display.set_mode((800, 600))
-        
+    
         self.icon = pygame.image.load("recursos/icono.png")
         pygame.display.set_icon(self.icon)
 
         self.clock = pygame.time.Clock()
-                
+        self.display = pygame.Surface((320, 240))
         self.movement = [False, False]
         
+        #self.display = pygame.Surface((320, 240))
+        
         self.assets = {
-            'player': pygame.transform.scale(load_image('icono.png')(), (30, 30))
+            'player': pygame.transform.scale(load_image1('icono.png'), (30, 30)),
+            'decor': load_images('tiles/decor'),
+            'grass': load_images('tiles/grass'),
+            'large_decor': load_images('tiles/large_decor'),
+            'stone': load_images('tiles/stone')
         }
         
         self.player = PhysicsEntity(self, 'player', (50, 50), (8, 15))
         
-        self.collision_area = pygame.Rect(50, 50, 300, 50)
+        self.tilemap = Tilemap(self, tile_size=16)
 
 
     def run(self):
         while True:
             menu.main_menu(self.screen)  # Ejecutar el menú antes del bucle principal del juego
             while True:
-                self.screen.fill((14, 219, 248))
-                self.player.update((self.movement[1] - self.movement[0], 0))
-                self.player.render(self.screen)
-
+                self.display.fill((14, 219, 248))
+                
+                self.tilemap.render(self.display)
+                
+                self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+                self.player.render(self.display)
+            
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         pygame.quit()
@@ -42,16 +52,25 @@ class Juego:
                     if event.type == pygame.KEYDOWN:
                         if event.key == pygame.K_LEFT:
                             self.movement[0] = True
-                        elif event.key == pygame.K_RIGHT:
+                        if event.key == pygame.K_RIGHT:
                             self.movement[1] = True
+                        if event.key == pygame.K_UP:
+                            self.player.velocity[1] = -3
                         elif event.key == pygame.K_ESCAPE:
-                            menu.main_menu(self.screen)
+                            restart_option = menu.restart_menu(self.screen)  # Llama a la función del menú de reinicio
+                            if restart_option:
+                                # Si el jugador eligió reiniciar, vuelve al principio del bucle
+                                continue
+                            else:
+                                # Si el jugador eligió salir, sale del juego
+                                pygame.quit()
+                                sys.exit()
                     if event.type == pygame.KEYUP:
                         if event.key == pygame.K_LEFT:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
-
+                self.screen.blit(pygame.transform.scale(self.display, self.screen.get_size()), (0, 0))
                 self.clock.tick(60)
                 pygame.display.update()
 

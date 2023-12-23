@@ -1,5 +1,6 @@
 import pygame
 import sys
+import game
 
 def main_menu(screen):
     # Intenta cargar la imagen de fondo
@@ -48,3 +49,30 @@ def draw_text(screen, text, size, color, x, y, padding_x=10, padding_y=5):
     # Superponer el rectángulo sobre la pantalla
     screen.blit(rect_surface, (text_rect.topleft[0] - padding_x, text_rect.topleft[1] - padding_y))
     screen.blit(text_surface, text_rect.topleft)
+    
+def restart_menu(screen):
+    while True:
+        screen.fill((255, 255, 255))
+
+        # Menú de reinicio
+        draw_text(screen, "HAS PAUSADO LA PARTIDA", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
+        draw_text(screen, "Presiona R para reiniciar", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 2)
+        draw_text(screen, "Presiona M para volver al menú principal", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3)
+        draw_text(screen, "Presiona Q para salir", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() * 3 // 4)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_v or event.key == pygame.K_ESCAPE:
+                    return True
+                if event.key == pygame.K_r:
+                    return game.__name__
+                elif event.key == pygame.K_m:
+                    return main_menu(screen)
+                elif event.key == pygame.K_q:
+                    pygame.quit()
+                    sys.exit()
