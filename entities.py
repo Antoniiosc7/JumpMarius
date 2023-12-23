@@ -6,7 +6,7 @@ class PhysicsEntity:
         self.type = e_type
         self.pos = list(pos)
         self.size = size
-        self.velocity = [0, 0]
+        self.velocity = [0.3, 0]
         self.collisions = {'up': False, 'down': False, 'right': False, 'left': False}
     
     def rect(self):
@@ -45,7 +45,9 @@ class PhysicsEntity:
         
         if self.collisions['down'] or self.collisions['up']:
             self.velocity[1] = 0
-        
+    def reset_position(self):
+        # Restablecer la posición inicial del jugador
+        self.pos = [50, 50]
     def render(self, surf):
         surf.blit(self.game.assets['player'], self.pos)
         

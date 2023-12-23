@@ -33,7 +33,12 @@ class Juego:
         
         self.tilemap = Tilemap(self, tile_size=16)
 
-
+    def reset_game(self):
+        # Restablecer todas las variables del juego a su estado inicial
+        self.movement = [False, False]
+        self.player.reset_position()
+        self.tilemap = Tilemap(self, tile_size=16)  
+    
     def run(self):
         while True:
             menu.main_menu(self.screen)  # Ejecutar el menú antes del bucle principal del juego
@@ -58,13 +63,12 @@ class Juego:
                             self.player.velocity[1] = -3
                         elif event.key == pygame.K_ESCAPE:
                             restart_option = menu.restart_menu(self.screen)  # Llama a la función del menú de reinicio
-                            if restart_option:
-                                # Si el jugador eligió reiniciar, vuelve al principio del bucle
-                                continue
-                            else:
-                                # Si el jugador eligió salir, sale del juego
-                                pygame.quit()
-                                sys.exit()
+                            if restart_option == "restart":
+                                self.reset_game()
+                                break  # Salir del bucle interno para reiniciar el juego
+                            elif restart_option == "main_menu":
+                                break  # Salir del bucle interno para volver al menú principal
+
                     if event.type == pygame.KEYUP:
                         if event.key == pygame.K_LEFT:
                             self.movement[0] = False
