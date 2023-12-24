@@ -87,6 +87,7 @@ class Player(PhysicsEntity):
         self.jump_duration = 30  # Duración aproximada de un salto en fotogramas
         self.air_time_limit = 4 * self.jump_duration  # Establece el límite de tiempo sin tocar el suelo (4 saltos)
         self.timer = 0  # Inicializa el temporizador a cero
+
     def reset_state(self):
         self.air_time = 0
         self.can_jump = True
@@ -94,7 +95,6 @@ class Player(PhysicsEntity):
         self.set_action('idle')
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
-
         self.air_time += 1
         if self.collisions['down']:
             self.air_time = 0
@@ -141,6 +141,15 @@ class Enemy(PhysicsEntity):
         self.walking = 0
         
     def update(self, tilemap, movement=(0, 0)):
+        super().update(tilemap, movement=movement)
+        if self.collisions['up']:
+            # Elimina la entidad enemiga al detectar una colisión por arriba
+            return True  # Indica que la entidad enemiga ha sido eliminada
+
+        if movement[0] != 0:
+            self.set_action('run')
+        else:
+            self.set_action('idle')
         if self.walking:
             if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23)):
                 if (self.collisions['right'] or self.collisions['left']):
@@ -170,7 +179,7 @@ class Enemy(PhysicsEntity):
             self.set_action('run')
         else:
             self.set_action('idle')
-            
+        '''
         if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()):
                 self.game.screenshake = max(16, self.game.screenshake)
@@ -182,7 +191,7 @@ class Enemy(PhysicsEntity):
                 self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
                 self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
                 return True
-            
+            '''
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
         
