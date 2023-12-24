@@ -74,7 +74,11 @@ class Player(PhysicsEntity):
         self.jump_duration = 30  # Duración aproximada de un salto en fotogramas
         self.air_time_limit = 4 * self.jump_duration  # Establece el límite de tiempo sin tocar el suelo (4 saltos)
         self.timer = 0  # Inicializa el temporizador a cero
-
+    def reset_state(self):
+        self.air_time = 0
+        self.can_jump = True
+        self.timer = 0
+        self.set_action('idle')
     def update(self, tilemap, movement=(0, 0)):
         super().update(tilemap, movement=movement)
 
@@ -89,7 +93,15 @@ class Player(PhysicsEntity):
         # Verifica si el temporizador ha superado el límite
         if self.timer > self.air_time_limit:
             # Vuelve al menú principal
-            menu.main_menu(self.game.screen)
+            
+             # Muestra el menú de Game Over
+            game_over_option = menu.game_over_menu(self.game.screen, self.game)
+
+            # Realiza acciones basadas en la opción seleccionada
+            if game_over_option == "restart":
+                self.game.reset_game()
+            elif game_over_option == "main_menu":
+                return menu.main_menu(self.game.screen)
 
         if self.air_time > 4:
             self.set_action('jump')

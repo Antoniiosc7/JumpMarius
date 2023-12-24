@@ -47,9 +47,21 @@ class Juego:
     def reset_game(self):
         # Restablecer todas las variables del juego a su estado inicial
         self.movement = [False, False]
+
+        # Reiniciar el jugador
         self.player.reset_position()
-        #self.tilemap = Tilemap(self, tile_size=16)  
+        self.player.reset_state()
+
+        # Reiniciar el mapa de tiles
+        self.tilemap = Tilemap(self, tile_size=16)
         self.tilemap.load('map.json')
+
+        # Reiniciar las nubes
+        self.clouds = Clouds(self.assets['clouds'], count=16)
+        
+        # Reiniciar el desplazamiento
+        self.scroll = [0, 0]
+
     
     def run(self):
         while True:
@@ -81,7 +93,7 @@ class Juego:
                         if event.key == pygame.K_UP: # Check if the player is on the ground
                             self.player.jump()  # Call the jump method
                         elif event.key == pygame.K_ESCAPE:
-                            restart_option = menu.restart_menu(self.screen)  # Llama a la función del menú de reinicio
+                            restart_option = menu.restart_menu(self.screen, self)  # Llama a la función del menú de reinicio
                             if restart_option == "restart":
                                 self.reset_game()
                                 break  # Salir del bucle interno para reiniciar el juego

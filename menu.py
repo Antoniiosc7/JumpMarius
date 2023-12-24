@@ -47,7 +47,7 @@ def draw_text(screen, text, size, color, x, y, padding_x=10, padding_y=5):
     screen.blit(rect_surface, (text_rect.topleft[0] - padding_x, text_rect.topleft[1] - padding_y))
     screen.blit(text_surface, text_rect.topleft)
     
-def restart_menu(screen):
+def restart_menu(screen, game):
     options = {
         pygame.K_v: 'continue',
         pygame.K_ESCAPE: 'continue',
@@ -58,7 +58,6 @@ def restart_menu(screen):
     background = pygame.image.load("recursos/fondo2.jpg").convert()
     background = pygame.transform.scale(background, (800, 600))
     while True:
-        #screen.fill((255, 255, 255))
         screen.blit(background, (0, 0))  # Dibujar la imagen de fondo
         # Menú de reinicio
         draw_text(screen, "HAS PAUSADO LA PARTIDA", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
@@ -76,11 +75,49 @@ def restart_menu(screen):
                 option = options.get(event.key)
                 if option is not None:
                     if option == "restart":
-                          return 'restart'
+                        game.reset_game()
+                        return 'restart'
                     elif option == "continue":
                         return True
                     elif option == "main_menu":
-                        return main_menu(screen)
+                        return "main_menu"
                     elif option == "quit":
                         pygame.quit()
                         sys.exit()
+def game_over_menu(screen, game):
+    options = {
+        pygame.K_r: "restart",
+        pygame.K_m: "main_menu",
+        pygame.K_q: "quit"
+    }
+
+    while True:
+        screen.fill((255, 255, 255))
+
+        # Menú de Game Over
+        draw_text(screen, "¡Has perdido!", 36, (255, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
+        draw_text(screen, "Presiona R para reiniciar", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 2)
+        draw_text(screen, "Presiona M para volver al menú principal", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3)
+        draw_text(screen, "Presiona Q para salir", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() * 3 // 4)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.KEYDOWN:
+                option = options.get(event.key)
+                if option is not None:
+                    if option == "restart":
+                        game.reset_game()
+                        return "restart"
+                    elif option == "main_menu":
+                        return "main_menu"
+                    elif option == "quit":
+                        pygame.quit()
+                        sys.exit()
+        
+        # Agrega un pequeño descanso para evitar procesar múltiples eventos por un solo toque de tecla
+        pygame.time.delay(100)
+
