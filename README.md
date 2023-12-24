@@ -12,3 +12,5 @@
  - Funcionalidad de punto final creando un meu diciendo que has ganado.
  - Rediseño de bloques y personaje
  - Rediseño de menus pudiendo desplazarte por ellos con las flechas e intro.
+ - ¿Habilitar saltos laterales? Wall slide
+ - ¿Implementar un sprint?

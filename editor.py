@@ -22,6 +22,7 @@ class Editor:
             'grass': load_images('tiles/grass'),
             'large_decor': load_images('tiles/large_decor'),
             'stone': load_images('tiles/stone'),
+            'spawners': load_images('tiles/spawners'),
         }
         
         self.movement = [False, False, False, False]
@@ -54,7 +55,8 @@ class Editor:
             
             self.tilemap.render(self.display, offset=render_scroll)
             
-            current_tile_img = self.assets[self.tile_list[self.tile_group]][self.tile_variant].copy()
+            current_tile_images = self.assets[self.tile_list[self.tile_group]][self.tile_variant]
+            current_tile_img = current_tile_images.copy()
             current_tile_img.set_alpha(100)
             
             mpos = pygame.mouse.get_pos()
