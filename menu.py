@@ -1,6 +1,5 @@
 import pygame
 import sys
-import game
 
 def main_menu(screen):
 
@@ -77,8 +76,7 @@ def restart_menu(screen):
                 option = options.get(event.key)
                 if option is not None:
                     if option == "restart":
-                        #return game.Juego().reset_game()
-                        return 'restart'
+                          return 'restart'
                     elif option == "continue":
                         return True
                     elif option == "main_menu":
