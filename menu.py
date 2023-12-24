@@ -1,15 +1,18 @@
 import pygame
 import sys
-
+def musica():
+    pygame.mixer.Sound('recursos/sfx/music.wav')
+    pygame.mixer.music.set_volume(0.1)
+    
 def main_menu(screen):
 
-    background = pygame.image.load("recursos/fondo.jpg").convert()
+    background = pygame.image.load("recursos/Clouds7.png").convert()
     background = pygame.transform.scale(background, (800, 600))
-
-
+    screen.fill((255, 255, 255))
+    
     while True:
         screen.blit(background, (0, 0))  # Dibujar la imagen de fondo
-
+        musica()
         # Menú principal
         draw_text(screen, "Bienvenido a Jump Marius", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "By Antoniiosc7", 28, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3.1)
@@ -55,10 +58,12 @@ def restart_menu(screen, game):
         pygame.K_m: "main_menu",
         pygame.K_q: "quit"
     }
-    background = pygame.image.load("recursos/fondo2.jpg").convert()
+    musica()
+    background = pygame.image.load("recursos/Clouds7.png").convert()
     background = pygame.transform.scale(background, (800, 600))
     while True:
         screen.blit(background, (0, 0))  # Dibujar la imagen de fondo
+        #screen.fill((255, 255, 255))
         # Menú de reinicio
         draw_text(screen, "HAS PAUSADO LA PARTIDA", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "Presiona R para reiniciar", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 2)
@@ -90,10 +95,10 @@ def game_over_menu(screen, game):
         pygame.K_m: "main_menu",
         pygame.K_q: "quit"
     }
-
+    
     while True:
         screen.fill((255, 255, 255))
-
+        musica()
         # Menú de Game Over
         draw_text(screen, "¡Has perdido!", 36, (255, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "Presiona R para reiniciar", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 2)

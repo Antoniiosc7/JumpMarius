@@ -7,10 +7,11 @@
 
 ## TO-DO LIST
  - Añadir menus al editor y la opcion de guardar / abrir con el nombre que tu quieras para que no sea siempre map.json sino que se pueda ir cambiando.
- - Añadir enemigos 
+ - ~~Añadir enemigos~~ 
  - Espacio final que signifique que te lo has pasado
  - Funcionalidad de punto final creando un meu diciendo que has ganado.
  - Rediseño de bloques y personaje
  - Rediseño de menus pudiendo desplazarte por ellos con las flechas e intro.
- - ¿Habilitar saltos laterales? Wall slide
- - ¿Implementar un sprint?
+ - ~~¿Habilitar saltos laterales? Wall slide~~ 
+ - ~~¿Implementar un sprint~~ 
+ - Arreglar que con el 'sprint' mueres tu en lugar de matar al resto. 

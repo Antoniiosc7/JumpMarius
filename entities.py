@@ -1,7 +1,8 @@
-import pygame
-import menu
-import random
 import math
+import random
+import menu
+import pygame, sys
+
 from particle import Particle
 from spark import Spark
 
@@ -75,65 +76,6 @@ class PhysicsEntity:
     def render(self, surf, offset=(0, 0)):
         surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
         
-        
-    def render(self, surf, offset=(0, 0)):
-        surf.blit(pygame.transform.flip(self.animation.img(), self.flip, False), (self.pos[0] - offset[0] + self.anim_offset[0], self.pos[1] - offset[1] + self.anim_offset[1]))
-
-class Player(PhysicsEntity):
-    def __init__(self, game, pos, size):
-        super().__init__(game, 'player', pos, size)
-        self.air_time = 0
-        self.can_jump = True
-        self.jump_duration = 30  # Duración aproximada de un salto en fotogramas
-        self.air_time_limit = 4 * self.jump_duration  # Establece el límite de tiempo sin tocar el suelo (4 saltos)
-        self.timer = 0  # Inicializa el temporizador a cero
-
-    def reset_state(self):
-        self.air_time = 0
-        self.can_jump = True
-        self.timer = 0
-        self.set_action('idle')
-    def update(self, tilemap, movement=(0, 0)):
-        super().update(tilemap, movement=movement)
-        self.air_time += 1
-        if self.collisions['down']:
-            self.air_time = 0
-            self.can_jump = True
-            self.timer = 0  # Reinicia el temporizador cuando toca el suelo
-        else:
-            self.timer += 1
-
-        # Verifica si el temporizador ha superado el límite
-        if self.timer > self.air_time_limit:
-            # Vuelve al menú principal
-            
-             # Muestra el menú de Game Over
-            game_over_option = menu.game_over_menu(self.game.screen, self.game)
-
-            # Realiza acciones basadas en la opción seleccionada
-            if game_over_option == "restart":
-                self.game.reset_game()
-            elif game_over_option == "main_menu":
-                return menu.main_menu(self.game.screen)
-
-        if self.air_time > 4:
-            self.set_action('jump')
-            self.can_jump = False
-        elif movement[0] != 0:
-            self.set_action('run')
-        else:
-            self.set_action('idle')
-
-    def reset_position(self):
-        # Restablecer la posición inicial del jugador
-        self.pos = [50, 50]
-
-    def jump(self):
-        if self.can_jump:
-            self.velocity[1] = -3
-            self.air_time = 1
-            self.can_jump = False
-            
 class Enemy(PhysicsEntity):
     def __init__(self, game, pos, size):
         super().__init__(game, 'enemy', pos, size)
@@ -141,15 +83,6 @@ class Enemy(PhysicsEntity):
         self.walking = 0
         
     def update(self, tilemap, movement=(0, 0)):
-        super().update(tilemap, movement=movement)
-        if self.collisions['up']:
-            # Elimina la entidad enemiga al detectar una colisión por arriba
-            return True  # Indica que la entidad enemiga ha sido eliminada
-
-        if movement[0] != 0:
-            self.set_action('run')
-        else:
-            self.set_action('idle')
         if self.walking:
             if tilemap.solid_check((self.rect().centerx + (-7 if self.flip else 7), self.pos[1] + 23)):
                 if (self.collisions['right'] or self.collisions['left']):
@@ -163,10 +96,12 @@ class Enemy(PhysicsEntity):
                 dis = (self.game.player.pos[0] - self.pos[0], self.game.player.pos[1] - self.pos[1])
                 if (abs(dis[1]) < 16):
                     if (self.flip and dis[0] < 0):
+                        self.game.sfx['shoot'].play()
                         self.game.projectiles.append([[self.rect().centerx - 7, self.rect().centery], -1.5, 0])
                         for i in range(4):
                             self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5 + math.pi, 2 + random.random()))
                     if (not self.flip and dis[0] > 0):
+                        self.game.sfx['shoot'].play()
                         self.game.projectiles.append([[self.rect().centerx + 7, self.rect().centery], 1.5, 0])
                         for i in range(4):
                             self.game.sparks.append(Spark(self.game.projectiles[-1][0], random.random() - 0.5, 2 + random.random()))
@@ -179,10 +114,11 @@ class Enemy(PhysicsEntity):
             self.set_action('run')
         else:
             self.set_action('idle')
-        '''
+            
         if abs(self.game.player.dashing) >= 50:
             if self.rect().colliderect(self.game.player.rect()):
                 self.game.screenshake = max(16, self.game.screenshake)
+                self.game.sfx['hit'].play()
                 for i in range(30):
                     angle = random.random() * math.pi * 2
                     speed = random.random() * 5
@@ -191,7 +127,7 @@ class Enemy(PhysicsEntity):
                 self.game.sparks.append(Spark(self.rect().center, 0, 5 + random.random()))
                 self.game.sparks.append(Spark(self.rect().center, math.pi, 5 + random.random()))
                 return True
-            '''
+            
     def render(self, surf, offset=(0, 0)):
         super().render(surf, offset=offset)
         
@@ -199,3 +135,150 @@ class Enemy(PhysicsEntity):
             surf.blit(pygame.transform.flip(self.game.assets['gun'], True, False), (self.rect().centerx - 4 - self.game.assets['gun'].get_width() - offset[0], self.rect().centery - offset[1]))
         else:
             surf.blit(self.game.assets['gun'], (self.rect().centerx + 4 - offset[0], self.rect().centery - offset[1]))
+
+class Player(PhysicsEntity):
+    def __init__(self, game, pos, size):
+        super().__init__(game, 'player', pos, size)
+        self.air_time = 0
+        self.jumps = 1
+        self.wall_slide = False
+        self.dashing = 0
+    def reset_position(self):
+        # Restablecer la posición inicial del jugador
+        self.pos = [50, 50]
+    def update(self, tilemap, movement=(0, 0)):
+        super().update(tilemap, movement=movement)
+    
+        self.air_time += 1
+        
+        if self.air_time > 120:
+            if not self.game.dead:
+                self.game.screenshake = max(16, self.game.screenshake)
+            self.game.dead += 1
+            game_over_option = menu.game_over_menu(self.game.screen, self.game)
+
+            # Realiza acciones basadas en la opción seleccionada
+            if game_over_option == "restart":
+                self.game.reset_game()
+            elif game_over_option == "main_menu":
+                return menu.main_menu(self.game.screen)
+        
+        if self.collisions['down']:
+            self.air_time = 0
+            self.jumps = 1
+            
+        self.wall_slide = False
+        if (self.collisions['right'] or self.collisions['left']) and self.air_time > 4:
+            self.wall_slide = True
+            self.velocity[1] = min(self.velocity[1], 0.5)
+            if self.collisions['right']:
+                self.flip = False
+            else:
+                self.flip = True
+            self.set_action('wall_slide')
+        for enemy in self.game.enemies.copy():
+                if self.check_enemy_collision(enemy):
+                    self.game.sfx['dead'].play()
+                    print("asddas2312342!")
+                    self.game.enemies.remove(enemy)  
+        if not self.wall_slide:
+            if self.air_time > 4:
+                self.set_action('jump')
+            elif movement[0] != 0:
+                self.set_action('run')
+            else:
+                self.set_action('idle')
+        
+        if abs(self.dashing) in {60, 50}:
+            for i in range(20):
+                angle = random.random() * math.pi * 2
+                speed = random.random() * 0.5 + 0.5
+                pvelocity = [math.cos(angle) * speed, math.sin(angle) * speed]
+                self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
+        if self.dashing > 0:
+            self.dashing = max(0, self.dashing - 1)
+        if self.dashing < 0:
+            self.dashing = min(0, self.dashing + 1)
+        if abs(self.dashing) > 50:
+            self.velocity[0] = abs(self.dashing) / self.dashing * 3 #ESTO ES CUANTA POTENCIA TIENE EL DASH
+            if abs(self.dashing) == 51:
+                self.velocity[0] *= 0.1
+            pvelocity = [abs(self.dashing) / self.dashing * random.random() * 3, 0]
+            self.game.particles.append(Particle(self.game, 'particle', self.rect().center, velocity=pvelocity, frame=random.randint(0, 7)))
+                
+        if self.velocity[0] > 0:
+            self.velocity[0] = max(self.velocity[0] - 0.1, 0)
+        else:
+            self.velocity[0] = min(self.velocity[0] + 0.1, 0)
+    
+    def render(self, surf, offset=(0, 0)):
+        if abs(self.dashing) <= 50:
+            super().render(surf, offset=offset)
+    def reset_state(self):
+        self.air_time = 0
+        self.can_jump = True
+        self.timer = 0
+        self.set_action('idle')
+    def jump(self):
+        if self.wall_slide:
+            if self.flip and self.last_movement[0] < 0:
+                self.velocity[0] = 3.5
+                self.velocity[1] = -2.5
+                self.air_time = 5
+                self.jumps = max(0, self.jumps - 1)
+                return True
+            elif not self.flip and self.last_movement[0] > 0:
+                self.velocity[0] = -3.5
+                self.velocity[1] = -2.5
+                self.air_time = 5
+                self.jumps = max(0, self.jumps - 1)
+                return True
+                
+        elif self.jumps:
+            self.velocity[1] = -3
+            self.jumps -= 1
+            self.air_time = 5
+            return True
+    # Función para verificar colisiones con enemigos
+    def check_enemy_collision(self, enemy):
+        player_rect = self.rect()
+        enemy_rect = enemy.rect()
+
+        # Ajusta la hitbox de impacto por la izquierda y derecha
+        collision_width = 0.9  # Puedes ajustar este valor según sea necesario
+        # Verifica la colisión con el jugador
+        if player_rect.colliderect(enemy_rect):
+            if player_rect.right - collision_width > enemy_rect.left/1.5 and self.last_movement[0] > 0:
+                self.handle_enemy_collision(enemy)
+            elif player_rect.left + collision_width < enemy_rect.right/1.5 and self.last_movement[0] < 0:
+                # Colisión por la izquierda del jugador
+                self.handle_enemy_collision(enemy)
+            elif player_rect.right - collision_width > enemy_rect.left/1.5 and enemy.last_movement[0] > 0:
+                # Colisión por la derecha del enemigo
+                self.handle_enemy_collision(enemy)
+            elif player_rect.left + collision_width < enemy_rect.right/1.5 and enemy.last_movement[0] < 0:
+                # Colisión por la izquierda del enemigo
+                self.handle_enemy_collision(enemy)
+            else:  
+                return self.rect().colliderect(enemy.rect())
+
+
+    def handle_enemy_collision(self, enemy):
+        # Llama a game_over_menu y captura la opción seleccionada
+        game_over_option = menu.game_over_menu(self.game.screen, self.game)
+
+        # Realiza acciones basadas en la opción seleccionada
+        if game_over_option == "restart":
+            self.game.reset_game()
+        elif game_over_option == "main_menu":
+            menu.main_menu(self.game.screen)
+        elif game_over_option == "quit":
+            pygame.quit()
+            sys.exit()
+    def dash(self):
+        if not self.dashing:
+            self.game.sfx['dash'].play()
+            if self.flip:
+                self.dashing = -60
+            else:
+                self.dashing = 60

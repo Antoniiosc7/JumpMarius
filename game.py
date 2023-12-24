@@ -9,7 +9,8 @@ from particle import Particle
 class Juego:
     def __init__(self):
         pygame.init()
-        
+        pygame.mixer.pre_init(44100, -16, 2, 2048)
+        pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
         self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
@@ -48,7 +49,9 @@ class Juego:
             'dash': pygame.mixer.Sound('recursos/sfx/dash.wav'),
             'hit': pygame.mixer.Sound('recursos/sfx/hit.wav'),
             'shoot': pygame.mixer.Sound('recursos/sfx/shoot.wav'),
+            'dead': pygame.mixer.Sound('recursos/sfx/dead.mp3'),
             'ambience': pygame.mixer.Sound('recursos/sfx/ambience.wav'),
+            'fondo': pygame.mixer.Sound('recursos/sfx/music.wav')
         }
         
         self.sfx['ambience'].set_volume(0.2)
@@ -56,6 +59,8 @@ class Juego:
         self.sfx['hit'].set_volume(0.8)
         self.sfx['dash'].set_volume(0.3)
         self.sfx['jump'].set_volume(0.7)
+        self.sfx['dead'].set_volume(0.3)
+        self.sfx['fondo'].set_volume(0.1)
         
         self.clouds = Clouds(self.assets['clouds'], count=16)
         
@@ -78,6 +83,7 @@ class Juego:
         for spawner in self.tilemap.extract([('spawners', 0), ('spawners', 1)]):
             if spawner['variant'] == 0:
                 self.player.pos = spawner['pos']
+                self.player.air_time = 0
             else:
                 self.enemies.append(Enemy(self, spawner['pos'], (8, 15)))
 
@@ -112,9 +118,11 @@ class Juego:
     
     def run(self):
         while True:
-            pygame.mixer.music.load('recursos/music.wav')
+            
             menu.main_menu(self.screen)  # Ejecutar el menú antes del bucle principal del juego
             while True:
+                
+                
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)
             
@@ -129,6 +137,13 @@ class Juego:
                 
                 if self.dead:
                     self.dead += 1
+                    game_over_option = menu.game_over_menu(self.screen, self)
+
+                    # Realiza acciones basadas en la opción seleccionada
+                    if game_over_option == "restart":
+                        self.reset_game()
+                    elif game_over_option == "main_menu":
+                        return menu.main_menu(self.game.screen)
                     if self.dead >= 10:
                         self.transition = min(30, self.transition + 1)
                     if self.dead > 40:
@@ -170,7 +185,7 @@ class Juego:
                             self.sparks.append(Spark(projectile[0], random.random() - 0.5 + (math.pi if projectile[1] > 0 else 0), 2 + random.random()))
                     elif projectile[2] > 360:
                         self.projectiles.remove(projectile)
-                        '''
+                        
                     elif abs(self.player.dashing) < 50:
                         if self.player.rect().collidepoint(projectile[0]):
                             self.projectiles.remove(projectile)
@@ -184,17 +199,6 @@ class Juego:
                                 self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
                             
                     
-                    elif abs(self.player.dashing) < 50:
-                        if self.player.rect().collidepoint(projectile[0]):
-                            self.projectiles.remove(projectile)
-                            self.dead += 1
-                            self.screenshake = max(16, self.screenshake)
-                            for i in range(30):
-                                angle = random.random() * math.pi * 2
-                                speed = random.random() * 5
-                                self.sparks.append(Spark(self.player.rect().center, angle, 2 + random.random()))
-                                self.particles.append(Particle(self, 'particle', self.player.rect().center, velocity=[math.cos(angle + math.pi) * speed * 0.5, math.sin(angle + math.pi) * speed * 0.5], frame=random.randint(0, 7)))
-                     '''       
                 for spark in self.sparks.copy():
                     kill = spark.update()
                     spark.render(self.display, offset=render_scroll)
@@ -212,12 +216,13 @@ class Juego:
                         particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3
                     if kill:
                         self.particles.remove(particle)
+                
                 for enemy in self.enemies.copy():
                     kill_enemy = self.check_enemy_collision(enemy)
                     enemy.render(self.display, offset=render_scroll)
                     if kill_enemy:
                         self.enemies.remove(enemy)
-
+                
                 for particle in self.particles.copy():
                     kill = particle.update()
                     particle.render(self.display, offset=render_scroll)
@@ -236,6 +241,9 @@ class Juego:
                             self.movement[1] = True
                         if event.key == pygame.K_UP: # Check if the player is on the ground
                             self.player.jump()  # Call the jump method
+                            self.sfx['jump'].play()
+                        if event.key == pygame.K_x:
+                            self.player.dash()
                         elif event.key == pygame.K_ESCAPE:
                             restart_option = menu.restart_menu(self.screen, self)  # Llama a la función del menú de reinicio
                             if restart_option == "restart":
@@ -261,6 +269,7 @@ class Juego:
                 self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
                 pygame.display.update()
                 self.clock.tick(60)
+    
     def check_enemy_collision(self, enemy):
         player_rect = self.player.rect()
         enemy_rect = enemy.rect()
@@ -269,28 +278,23 @@ class Juego:
         if player_rect.colliderect(enemy_rect):
             if player_rect.right > enemy_rect.left and self.player.last_movement[0] > 0:
                 # Colisión por la derecha del jugador
-                pass
-                #self.handle_enemy_collision(enemy)
+                
+                self.handle_enemy_collision(enemy)
             elif player_rect.left < enemy_rect.right and self.player.last_movement[0] < 0:
                 # Colisión por la izquierda del jugador
-                pass
-                #self.handle_enemy_collision(enemy)
+                
+                self.handle_enemy_collision(enemy)
              
             if player_rect.bottom > enemy_rect.top and self.player.last_movement[1] > 0:
                 # Colisión por arriba del jugador
                 return self.handle_enemy_collision(enemy)
-            '''
-            elif player_rect.bottom > enemy_rect.top and self.player.last_movement[1] > 0:
-                # Colisión por abajo del jugador
-                return self.handle_enemy_collision(enemy)  # Devuelve el resultado de la función
-            elif player_rect.top < enemy_rect.bottom and self.player.last_movement[1] < 0:
-                # Colisión por arriba del jugador
-                return self.handle_enemy_collision(enemy)  # Devuelve el resultado de la función
-            '''
+        
+
 
         return False  # Indica que el enemigo no ha sido eliminado
 
     def handle_enemy_collision(self, enemy):
+        print('a')
         # Acciones a realizar cuando hay colisión con un enemigo
         # Por ejemplo, mostrar el menú de Game Over
         game_over_option = menu.game_over_menu(self.screen, self)
