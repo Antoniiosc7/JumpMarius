@@ -248,23 +248,25 @@ class Player(PhysicsEntity):
         collision_width = 0.9  # Puedes ajustar este valor según sea necesario
         # Verifica la colisión con el jugador
         if player_rect.colliderect(enemy_rect):
-            if player_rect.right - collision_width > enemy_rect.left/1.5 and self.last_movement[0] > 0:
+            if player_rect.right - collision_width > enemy_rect.left/1.2 and self.last_movement[0] > 0:
                 self.handle_enemy_collision(enemy)
-            elif player_rect.left + collision_width < enemy_rect.right/1.5 and self.last_movement[0] < 0:
+            elif player_rect.left + collision_width < enemy_rect.right/1.2 and self.last_movement[0] < 0:
                 # Colisión por la izquierda del jugador
                 self.handle_enemy_collision(enemy)
-            elif player_rect.right - collision_width > enemy_rect.left/1.5 and enemy.last_movement[0] > 0:
+            elif player_rect.right - collision_width > enemy_rect.left/1.2 and enemy.last_movement[0] > 0:
                 # Colisión por la derecha del enemigo
                 self.handle_enemy_collision(enemy)
-            elif player_rect.left + collision_width < enemy_rect.right/1.5 and enemy.last_movement[0] < 0:
+            elif player_rect.left + collision_width < enemy_rect.right/1.2 and enemy.last_movement[0] < 0:
                 # Colisión por la izquierda del enemigo
                 self.handle_enemy_collision(enemy)
+                
             else:  
                 return self.rect().colliderect(enemy.rect())
 
 
     def handle_enemy_collision(self, enemy):
         # Llama a game_over_menu y captura la opción seleccionada
+        self.game.death_count += 1
         game_over_option = menu.game_over_menu(self.game.screen, self.game)
 
         # Realiza acciones basadas en la opción seleccionada

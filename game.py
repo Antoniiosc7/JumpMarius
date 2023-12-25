@@ -12,12 +12,12 @@ class Juego:
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
-        self.screen = pygame.display.set_mode((640, 480))
+        self.screen = pygame.display.set_mode((1280, 960))
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         self.icon = pygame.image.load("recursos/icono.png")
         pygame.display.set_icon(self.icon)
-
+        self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
         self.movement = [False, False]
         
@@ -121,7 +121,7 @@ class Juego:
             
             menu.main_menu(self.screen)  # Ejecutar el menú antes del bucle principal del juego
             while True:
-                
+                self.draw_death_count()
                 
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)
@@ -137,6 +137,7 @@ class Juego:
                 
                 if self.dead:
                     self.dead += 1
+                    self.death_count += 1
                     game_over_option = menu.game_over_menu(self.screen, self)
 
                     # Realiza acciones basadas en la opción seleccionada
@@ -228,7 +229,7 @@ class Juego:
                     particle.render(self.display, offset=render_scroll)
                     if particle.type == 'leaf':
                         particle.pos[0] += math.sin(particle.animation.frame * 0.035) * 0.3
-                    if kill:
+                    if kill: 
                         self.particles.remove(particle)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -265,6 +266,8 @@ class Juego:
                     
                 self.display_2.blit(self.display, (0, 0))
                 
+                
+
                 screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
                 self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
                 pygame.display.update()
@@ -278,16 +281,18 @@ class Juego:
         if player_rect.colliderect(enemy_rect):
             if player_rect.right > enemy_rect.left and self.player.last_movement[0] > 0:
                 # Colisión por la derecha del jugador
-                
+                self.death_count += 1
                 self.handle_enemy_collision(enemy)
             elif player_rect.left < enemy_rect.right and self.player.last_movement[0] < 0:
                 # Colisión por la izquierda del jugador
-                
+                self.death_count += 1
                 self.handle_enemy_collision(enemy)
              
             if player_rect.bottom > enemy_rect.top and self.player.last_movement[1] > 0:
                 # Colisión por arriba del jugador
+                self.death_count += 1
                 return self.handle_enemy_collision(enemy)
+                
         
 
 
@@ -308,5 +313,12 @@ class Juego:
             # Elimina al enemigo de la lista de enemigos
             self.enemies.remove(enemy)
             return True  # Indica que el enemigo ha sido eliminado
+        
+        
+    def draw_death_count(self):
+        font = pygame.font.Font(None, 36)
+        print(self.death_count)
+        text = font.render(f'Muertes: {self.death_count}', True, (255, 255, 255))
+        self.screen.blit(text, (30, 30))
 if __name__ == "__main__":
     Juego().run()
