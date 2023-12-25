@@ -12,7 +12,9 @@ class Juego:
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
-        self.screen = pygame.display.set_mode((1280, 960))
+        self.screen_display = (1280, 960)
+        self.current_resolution = self.screen_display
+        self.screen = pygame.display.set_mode(self.current_resolution)
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         self.icon = pygame.image.load("recursos/icono.png")
@@ -119,7 +121,7 @@ class Juego:
     def run(self):
         while True:
             
-            menu.main_menu(self.screen)  # Ejecutar el menú antes del bucle principal del juego
+            menu.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
             while True:
                 self.draw_death_count()
                 
@@ -144,7 +146,7 @@ class Juego:
                     if game_over_option == "restart":
                         self.reset_game()
                     elif game_over_option == "main_menu":
-                        return menu.main_menu(self.game.screen)
+                        return menu.main_menu(self.screen, self)
                     if self.dead >= 10:
                         self.transition = min(30, self.transition + 1)
                     if self.dead > 40:
@@ -308,7 +310,7 @@ class Juego:
         if game_over_option == "restart":
             self.reset_game()
         elif game_over_option == "main_menu":
-            return menu.main_menu(self.screen)
+            return menu.main_menu(self.screen, self)
         elif game_over_option == "continue":
             # Elimina al enemigo de la lista de enemigos
             self.enemies.remove(enemy)
