@@ -143,6 +143,8 @@ class Player(PhysicsEntity):
         self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
+        self.pos[0] *= self.game.zoom
+        self.pos[1] *= self.game.zoom
     def reset_position(self):
         # Restablecer la posición inicial del jugador
         self.pos = [50, 50]
@@ -243,17 +245,19 @@ class Player(PhysicsEntity):
     def check_enemy_collision(self, enemy):
         player_rect = self.rect()
         enemy_rect = enemy.rect()
-
+        #enemy_rect.y += 5  # Ajusta la hitbox de impacto por arriba y abajo
         # Ajusta la hitbox de impacto por la izquierda y derecha
         collision_width = 0.9  # Puedes ajustar este valor según sea necesario
         # Verifica la colisión con el jugador
         if player_rect.colliderect(enemy_rect):
+            '''
             if player_rect.right - collision_width > enemy_rect.left/1.2 and self.last_movement[0] > 0:
                 self.handle_enemy_collision(enemy)
             elif player_rect.left + collision_width < enemy_rect.right/1.2 and self.last_movement[0] < 0:
                 # Colisión por la izquierda del jugador
                 self.handle_enemy_collision(enemy)
-            elif player_rect.right - collision_width > enemy_rect.left/1.2 and enemy.last_movement[0] > 0:
+            '''
+            if player_rect.right - collision_width > enemy_rect.left/1.2 and enemy.last_movement[0] > 0:
                 # Colisión por la derecha del enemigo
                 self.handle_enemy_collision(enemy)
             elif player_rect.left + collision_width < enemy_rect.right/1.2 and enemy.last_movement[0] < 0:
