@@ -143,8 +143,6 @@ class Player(PhysicsEntity):
         self.jumps = 1
         self.wall_slide = False
         self.dashing = 0
-        self.pos[0] *= self.game.zoom
-        self.pos[1] *= self.game.zoom
     def reset_position(self):
         # Restablecer la posición inicial del jugador
         self.pos = [50, 50]
