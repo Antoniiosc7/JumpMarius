@@ -3,7 +3,6 @@ from utils import load_image, load_images, Animation
 from tilemap import Tilemap
 from clouds import Clouds
 from spark import Spark
-import os
 import random, math, sys, pygame, menu
 from particle import Particle
 class Juego:
@@ -12,7 +11,7 @@ class Juego:
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
-        self.screen_display = (1280, 960)
+        self.screen_display = (640, 480)
         self.current_resolution = self.screen_display
         self.screen = pygame.display.set_mode(self.current_resolution)
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
@@ -274,7 +273,9 @@ class Juego:
                 self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
                 pygame.display.update()
                 self.clock.tick(60)
-    
+    def change_resolution(self, resolution):
+        self.current_resolution = resolution
+        self.screen = pygame.display.set_mode(self.current_resolution)
     def check_enemy_collision(self, enemy):
         player_rect = self.player.rect()
         enemy_rect = enemy.rect()
@@ -322,5 +323,3 @@ class Juego:
         print(self.death_count)
         text = font.render(f'Muertes: {self.death_count}', True, (255, 255, 255))
         self.screen.blit(text, (30, 30))
-if __name__ == "__main__":
-    Juego().run()
