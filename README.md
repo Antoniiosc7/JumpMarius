@@ -6,7 +6,7 @@
  ### Notas de la version
 
 ## TO-DO LIST
- - Añadir menus al editor y la opcion de guardar / abrir con el nombre que tu quieras para que no sea siempre map.json sino que se pueda ir cambiando.
+ - ~~Añadir menus al editor y la opcion de guardar / abrir con el nombre que tu quieras para que no sea siempre map.json sino que se pueda ir cambiando.~~
  - ~~Añadir enemigos~~ 
  - Espacio final que signifique que te lo has pasado
  - Funcionalidad de punto final creando un meu diciendo que has ganado.
