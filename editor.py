@@ -3,7 +3,7 @@ import pygame
 import tkinter as tk
 from tkinter import simpledialog, messagebox
 
-from utils import load_images
+from utils import load_image, load_images
 from tilemap import Tilemap
 
 RENDER_SCALE = 2.0
@@ -24,6 +24,7 @@ class Editor:
             'large_decor': load_images('tiles/large_decor'),
             'stone': load_images('tiles/stone'),
             'spawners': load_images('tiles/spawners'),
+            'final': load_images('tiles/final')
         }
 
         self.movement = [False, False, False, False]
@@ -52,7 +53,7 @@ class Editor:
     def show_menu(self):
         root = tk.Tk()
         root.withdraw()
-        result = messagebox.askquestion("Menu", "¿Qué deseas hacer?", icon='warning')
+        result = messagebox.askquestion("Menu", "¿Deseas salir sin guardar?", icon='warning')
 
         if result == 'yes':  # Si selecciona 'Sí', se cierra la aplicación
             pygame.quit()

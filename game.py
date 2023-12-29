@@ -49,7 +49,8 @@ class Juego:
             'particle/particle': Animation(load_images('particles/particle'), img_dur=6, loop=False),
             'gun': load_image('gun.png'),
             'projectile': load_image('projectile.png'),
-            'spawners': load_images('tiles/spawners')
+            'spawners': load_images('tiles/spawners'),
+            'final': load_images('tiles/final')
         }
         self.sfx = {
             'jump': pygame.mixer.Sound('recursos/sfx/jump.wav'),
@@ -268,7 +269,25 @@ class Juego:
                     pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
                     transition_surf.set_colorkey((255, 255, 255))
                     self.display.blit(transition_surf, (0, 0))
-                    
+                player_rect = pygame.Rect(self.player.pos[0], self.player.pos[1], self.player.size[0], self.player.size[1])
+
+            # Verificar si el jugador está encima del tile 'final'
+                if 'final' in self.tilemap.tilemap and player_rect.colliderect(self.tilemap.tilemap['final']['rect']):
+                    self.game_over = True
+                    option = menu.show_game_over_menu(self.screen, death_count=self.death_count)
+                    if option == "restart":
+                        self.reset_game()
+                        self.game_over = False
+                        self.run()
+                    elif option == "main_menu":
+                        main_menu_result = menu.main_menu(self.screen, self)
+                        if main_menu_result == 'restart':
+                            self.reset_game()
+                            self.game_over = False
+                            self.run()
+                    elif option == "quit":
+                        pygame.quit()
+                        sys.exit() 
                 self.display_2.blit(self.display, (0, 0))
                 
                 
