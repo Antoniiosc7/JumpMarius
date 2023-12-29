@@ -179,7 +179,7 @@ class Player(PhysicsEntity):
         for enemy in self.game.enemies.copy():
                 if self.check_enemy_collision(enemy):
                     self.game.sfx['dead'].play()
-                    print("asddas2312342!")
+                    print("Has matado a un enemigo!")
                     self.game.enemies.remove(enemy)  
         if not self.wall_slide:
             if self.air_time > 4:

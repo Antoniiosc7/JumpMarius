@@ -6,14 +6,20 @@ from spark import Spark
 import random, math, sys, pygame, menu
 from particle import Particle
 class Juego:
-    def __init__(self):
+    def __init__(self, resolution=None):
         pygame.init()
+        if resolution:
+            self.current_resolution = resolution
+            self.screen = pygame.display.set_mode(self.current_resolution)
+        else:
+            self.current_resolution = resolution
+
+        self.screen = pygame.display.set_mode(self.current_resolution)
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
         self.screen_display = (640, 480)
         self.current_resolution = self.screen_display
-        self.screen = pygame.display.set_mode(self.current_resolution)
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         self.icon = pygame.image.load("recursos/icono.png")
@@ -121,9 +127,7 @@ class Juego:
         while True:
             
             menu.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
-            while True:
-                self.draw_death_count()
-                
+            while True:               
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)
             
@@ -295,14 +299,16 @@ class Juego:
                 # Colisión por arriba del jugador
                 self.death_count += 1
                 return self.handle_enemy_collision(enemy)
-                
-        
-
-
         return False  # Indica que el enemigo no ha sido eliminado
-
+    
+    def change_resolution(self, resolution):
+        self.current_resolution = resolution
+        self.screen = pygame.display.set_mode(self.current_resolution)
+        self.display = pygame.Surface((resolution[0] // 2, resolution[1] // 2), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface((resolution[0] // 2, resolution[1] // 2))
+        self.clouds = Clouds(self.assets['clouds'], count=16)
+        
     def handle_enemy_collision(self, enemy):
-        print('a')
         # Acciones a realizar cuando hay colisión con un enemigo
         # Por ejemplo, mostrar el menú de Game Over
         game_over_option = menu.game_over_menu(self.screen, self)
@@ -318,8 +324,3 @@ class Juego:
             return True  # Indica que el enemigo ha sido eliminado
         
         
-    def draw_death_count(self):
-        font = pygame.font.Font(None, 36)
-        print(self.death_count)
-        text = font.render(f'Muertes: {self.death_count}', True, (255, 255, 255))
-        self.screen.blit(text, (30, 30))

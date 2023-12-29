@@ -1,26 +1,43 @@
 import pygame
 import sys
-def musica():
-    pygame.mixer.Sound('recursos/sfx/music.wav')
-    pygame.mixer.music.set_volume(0.1)
-    
-import pygame
-import sys
+import pandas as pd
 
-def musica():
-    pygame.mixer.Sound('recursos/sfx/music.wav')
-    pygame.mixer.music.set_volume(0.1)
+
+def save_resolution_to_csv(resolution):
+    resolution_df = pd.DataFrame([resolution], columns=['Width', 'Height'])
+    resolution_df.to_csv('config.csv', index=False)
+
+
+def load_resolution_from_csv():
+    try:
+        resolution_df = pd.read_csv('config.csv')
+        resolution = (resolution_df['Width'].iloc[0], resolution_df['Height'].iloc[0])
+        print("Resolution loaded:", resolution)
+        return resolution
+    except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
+        return None
+    
+def load_and_scale_background(game):
+    # Obtener la resolución del archivo CSV
+    resolution = load_resolution_from_csv()
+
+    # Cargar y escalar la imagen de fondo
+    background = pygame.image.load("recursos/Clouds7.png").convert()
+
+    if resolution:
+        background = pygame.transform.scale(background, resolution)
+
+    return background
 
 def main_menu(screen, game):
     options = ["Comenzar nueva partida", "Seleccion de nivel", "Seleccion de personaje", "Configuracion", "Salir"]
     selected_option = 0
-
-    background = pygame.image.load("recursos/Clouds7.png").convert()
-    background = pygame.transform.scale(background, game.current_resolution)
-
+    background = load_and_scale_background(game)
     while True:
+        
+        
         screen.blit(background, (0, 0))
-        musica()
+
 
         draw_text(screen, "Bienvenido a Jump Marius", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "By Antoniiosc7", 28, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3.1)
@@ -32,8 +49,8 @@ def main_menu(screen, game):
                 size = 28
                 color = (255, 0, 0)
             draw_text(screen, option, size, color, screen.get_width() // 2, screen.get_height() // 2 + i * 40)
-
-        pygame.display.flip()
+        
+        pygame.display.flip()                                                                           
 
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -53,8 +70,12 @@ def main_menu(screen, game):
                     elif option == "Seleccion de personaje":
                         pass
                     elif option == "Configuracion":
-                        config_menu_result = config_menu(screen, game)
+                        config_menu_result, new_resolution = config_menu(screen, game)
                         if config_menu_result == "main_menu":
+                            if new_resolution:
+                                game.change_resolution(new_resolution)
+                                save_resolution_to_csv(new_resolution)
+                                load_and_scale_background(game)  # Actualizar la imagen de fondo
                             return "main_menu"
                     elif option == "Salir":
                         pygame.quit()
@@ -89,13 +110,12 @@ def restart_menu(screen, game):
     options = ["Continuar partida", "Reiniciar partida", "Menu Principal", "Salir"]
     selected_option = 0
 
-    background = pygame.image.load("recursos/Clouds7.png").convert()
-    background = pygame.transform.scale(background, game.current_resolution)
+    background = load_and_scale_background(game)
+    screen.blit(background, (0, 0))
+
 
     while True:
-        screen.blit(background, (0, 0))
-        musica()
-
+        
         draw_text(screen, "Has pausado la partida", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "¿Que deseas hacer?", 28, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3.1)
 
@@ -140,7 +160,7 @@ def game_over_menu(screen, game):
     
     while True:
         screen.fill((255, 255, 255))
-        musica()
+  
         # Menú de Game Over
         draw_text(screen, "¡Has perdido!", 36, (255, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "Presiona R para reiniciar", 24, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 2)
@@ -205,6 +225,13 @@ def config_menu(screen, game):
                         game.current_resolution = (1280, 960)
                     elif option == "Volver al menú principal":
                         return main_menu(screen, game), game.current_resolution  # Devuelve al menú principal y la resolución
+
+                    # Aquí actualizamos la resolución en el juego y guardamos en el archivo CSV
+                    try:
+                        game.screen = pygame.display.set_mode(game.current_resolution)
+                        save_resolution_to_csv(game.current_resolution)
+                    except Exception as e:
+                        print(f"Error al guardar la resolución: {e}")
                     
 def draw_text2(screen, text, size, color, x, y, padding_x=10, padding_y=5, death_count=None):
     font = pygame.font.Font(None, size)
@@ -233,4 +260,10 @@ def draw_text2(screen, text, size, color, x, y, padding_x=10, padding_y=5, death
         
 if __name__ == "__main__":
     from game import Juego
-    Juego().run()
+
+    resolution = load_resolution_from_csv()
+    if resolution:
+        Juego(resolution).run()
+    else:
+        Juego().run()
+
