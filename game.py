@@ -22,13 +22,14 @@ class Juego:
         self.current_resolution = self.screen_display
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
-        pygame.display.update()
         self.icon = pygame.image.load("recursos/icono.png")
         pygame.display.set_icon(self.icon)
         self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
         self.movement = [False, False]
-
+        
+        #self.display = pygame.Surface((320, 240))
+        
         self.assets = {
             'decor': load_images('tiles/decor'),
             'grass': load_images('tiles/grass'),
@@ -154,12 +155,10 @@ class Juego:
                     if self.dead > 40:
                         self.load_level(self.level)
                 
-                self.scroll[0] += (self.player.rect().centerx - self.screen.get_width() / 2 - self.scroll[0]) / 30
-                self.scroll[1] += (self.player.rect().centery - self.screen.get_height() / 2 - self.scroll[1]) / 30
-                render_scroll = (
-                    int((self.player.rect().centerx - self.screen.get_width() / 2)),
-                    int((self.player.rect().centery - self.screen.get_height() / 2) )
-                )
+                self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
+                self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
+                render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
+                
                 for rect in self.leaf_spawners:
                     if random.random() * 49999 < rect.width * rect.height:
                         pos = (rect.x + random.random() * rect.width, rect.y + random.random() * rect.height)
@@ -177,9 +176,9 @@ class Juego:
                         self.enemies.remove(enemy)
                 
                 if not self.dead:
-                    self.player.update(self.tilemap, ((self.movement[1] - self.movement[0]), 0))
-                    self.player.render(self.display, offset=(int(render_scroll[0]), int(render_scroll[1])))
-
+                    self.player.update(self.tilemap, (self.movement[1] - self.movement[0], 0))
+                    self.player.render(self.display, offset=render_scroll)
+                
                 # [[x, y], direction, timer]
                 for projectile in self.projectiles.copy():
                     projectile[0][0] += projectile[1]
@@ -225,10 +224,8 @@ class Juego:
                         self.particles.remove(particle)
                 
                 for enemy in self.enemies.copy():
-                    kill_enemy = self.player.check_enemy_collision(enemy)
-                    # Ejemplo para ajustar la posición de un enemigo al renderizar
-                    enemy.render(self.display, offset=(int(render_scroll[0] ), int(render_scroll[1])))
-
+                    kill_enemy = self.check_enemy_collision(enemy)
+                    enemy.render(self.display, offset=render_scroll)
                     if kill_enemy:
                         self.enemies.remove(enemy)
                 
@@ -260,15 +257,12 @@ class Juego:
                                 break  # Salir del bucle interno para reiniciar el juego
                             elif restart_option == "main_menu":
                                 break  # Salir del bucle interno para volver al menú principal
-                    if event.type == pygame.VIDEORESIZE:
-                        self.handle_resize_event(event)
+
                     if event.type == pygame.KEYUP:
                         if event.key == pygame.K_LEFT:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
-                    elif event.type == pygame.VIDEORESIZE:
-                        self.handle_resize_event(event)
                 if self.transition:
                     transition_surf = pygame.Surface(self.display.get_size())
                     pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
@@ -281,11 +275,7 @@ class Juego:
 
                 screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
                 self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
-                scaled_display = pygame.transform.scale(self.display_2, self.current_resolution)
-                self.screen.blit(scaled_display, (0, 0))
                 pygame.display.update()
-                pygame.display.flip()
-
                 self.clock.tick(60)
     def change_resolution(self, resolution):
         self.current_resolution = resolution

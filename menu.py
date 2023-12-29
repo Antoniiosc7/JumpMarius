@@ -64,7 +64,6 @@ def main_menu(screen, game):
                 elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE]:
                     option = options[selected_option]
                     if option == "Comenzar nueva partida":
-                        game.handle_resize_event(pygame.event.Event(pygame.VIDEORESIZE, {"w": game.current_resolution[0], "h": game.current_resolution[1]}))
                         return 'restart'
                     elif option == "Seleccion de nivel":
                         pass
@@ -81,8 +80,6 @@ def main_menu(screen, game):
                     elif option == "Salir":
                         pygame.quit()
                         sys.exit()
-    
-                    
 
 def draw_text(screen, text, size, color, x, y, padding_x=10, padding_y=5, death_count=None):
     font = pygame.font.Font(None, size)
@@ -217,7 +214,7 @@ def config_menu(screen, game):
                 if event.key == pygame.K_UP:
                     selected_option = (selected_option - 1) % len(options)
                 elif event.key == pygame.K_DOWN:
-                    selected_option = (selected_option + 1) % len(options) 
+                    selected_option = (selected_option + 1) % len(options)
                 elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE]:
                     option = options[selected_option]
                     if option == "320 x 240":
