@@ -11,7 +11,8 @@
  - Espacio final que signifique que te lo has pasado
  - Funcionalidad de punto final creando un meu diciendo que has ganado.
  - Rediseño de bloques y personaje
- - Rediseño de menus pudiendo desplazarte por ellos con las flechas e intro.
+ - ~~Rediseño de menus pudiendo desplazarte por ellos con las flechas e intro.~~
  - ~~¿Habilitar saltos laterales? Wall slide~~ 
  - ~~¿Implementar un sprint~~ 
- - Arreglar que con el 'sprint' mueres tu en lugar de matar al resto. 
+ - Implementar selección de persona.
+ - Implementar seleccion de nivel.
