@@ -3,18 +3,23 @@ from utils import load_image, load_images, Animation
 from tilemap import Tilemap
 from clouds import Clouds
 from spark import Spark
-import os
 import random, math, sys, pygame, menu
 from particle import Particle
 class Juego:
-    def __init__(self):
+    def __init__(self, resolution=None):
         pygame.init()
+        if resolution:
+            self.current_resolution = resolution
+            self.screen = pygame.display.set_mode(self.current_resolution)
+        else:
+            self.current_resolution = resolution
+
+        self.screen = pygame.display.set_mode(self.current_resolution)
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
         pygame.display.set_caption("Jump Marius")
-        self.screen_display = (320, 240)
+        self.screen_display = (640, 480)
         self.current_resolution = self.screen_display
-        self.screen = pygame.display.set_mode((640, 480))
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         pygame.display.update()
@@ -121,8 +126,7 @@ class Juego:
         while True:
             
             menu.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
-            while True:
-                
+            while True:               
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)
             
@@ -283,45 +287,50 @@ class Juego:
                 pygame.display.flip()
 
                 self.clock.tick(60)
+    def change_resolution(self, resolution):
+        self.current_resolution = resolution
+        self.screen = pygame.display.set_mode(self.current_resolution)
+    def check_enemy_collision(self, enemy):
+        player_rect = self.player.rect()
+        enemy_rect = enemy.rect()
+
+        # Verifica la colisión con el jugador
+        if player_rect.colliderect(enemy_rect):
+            if player_rect.right > enemy_rect.left and self.player.last_movement[0] > 0:
+                # Colisión por la derecha del jugador
+                self.death_count += 1
+                self.handle_enemy_collision(enemy)
+            elif player_rect.left < enemy_rect.right and self.player.last_movement[0] < 0:
+                # Colisión por la izquierda del jugador
+                self.death_count += 1
+                self.handle_enemy_collision(enemy)
+             
+            if player_rect.bottom > enemy_rect.top and self.player.last_movement[1] > 0:
+                # Colisión por arriba del jugador
+                self.death_count += 1
+                return self.handle_enemy_collision(enemy)
+        return False  # Indica que el enemigo no ha sido eliminado
     
+    def change_resolution(self, resolution):
+        self.current_resolution = resolution
+        self.screen = pygame.display.set_mode(self.current_resolution)
+        self.display = pygame.Surface((resolution[0] // 2, resolution[1] // 2), pygame.SRCALPHA)
+        self.display_2 = pygame.Surface((resolution[0] // 2, resolution[1] // 2))
+        self.clouds = Clouds(self.assets['clouds'], count=16)
         
-    def handle_resize_event(self, event):
-        if event.type == pygame.VIDEORESIZE:
-            self.current_resolution = (event.w, event.h)
-            self.screen = pygame.display.set_mode(self.current_resolution, pygame.RESIZABLE)
+    def handle_enemy_collision(self, enemy):
+        # Acciones a realizar cuando hay colisión con un enemigo
+        # Por ejemplo, mostrar el menú de Game Over
+        game_over_option = menu.game_over_menu(self.screen, self)
 
-            # Update the player's position and other elements
-            self.scroll[0] += (self.player.rect().centerx - self.screen.get_width() / 2 - self.scroll[0]) / 30
-            self.scroll[1] += (self.player.rect().centery - self.screen.get_height() / 2 - self.scroll[1]) / 30
-
-            # Update the rendering coordinates
-            render_scroll = (
-                int((self.player.rect().centerx - self.screen.get_width() / 2)),
-                int((self.player.rect().centery - self.screen.get_height() / 2))
-            )
-
-            # Render elements at the new position
-            self.clouds.render(self.screen, offset=render_scroll)
-            self.display.blit(self.assets['background'], (0, 0))
-            self.tilemap.render(self.screen, offset=render_scroll)
-
-            # Render enemies at the new position
-            for enemy in self.enemies:
-                enemy.render(self.display, offset=render_scroll)
-
-            # Render the player at the new position
-            self.player.render(self.display, offset=(int(render_scroll[0]), int(render_scroll[1])))
-
-            # Scale the background image only when the screen is resized
-            self.assets['background'] = pygame.transform.scale(self.assets['background'],
-                                                                (int(self.current_resolution[0]), int(self.current_resolution[1])))
-if __name__ == "__main__":
-    juego_instance = Juego()
-    juego_instance.run()
-
-
-
-
-if __name__ == "__main__":
-    juego_instance = Juego()
-    juego_instance.run()
+        # Realiza acciones basadas en la opción seleccionada
+        if game_over_option == "restart":
+            self.reset_game()
+        elif game_over_option == "main_menu":
+            return menu.main_menu(self.screen, self)
+        elif game_over_option == "continue":
+            # Elimina al enemigo de la lista de enemigos
+            self.enemies.remove(enemy)
+            return True  # Indica que el enemigo ha sido eliminado
+        
+        
