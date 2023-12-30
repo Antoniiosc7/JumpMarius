@@ -15,7 +15,7 @@ AUTOTILE_MAP = {
 }
 
 NEIGHBOR_OFFSETS = [(-1, 0), (-1, -1), (0, -1), (1, -1), (1, 0), (0, 0), (-1, 1), (0, 1), (1, 1)]
-PHYSICS_TILES = {'grass', 'stone'}
+PHYSICS_TILES = {'grass', 'stone', 'final'}
 AUTOTILE_TYPES = {'grass', 'stone'}
 
 class Tilemap:
@@ -24,7 +24,19 @@ class Tilemap:
         self.tile_size = tile_size
         self.tilemap = {}
         self.offgrid_tiles = []
+    def is_player_on_final_block(self, player_pos):
+        tile_loc = (
+            int(player_pos[0] // self.tile_size),
+            int(player_pos[1] // self.tile_size)
+        )
+        tile_key = f"{tile_loc[0]};{tile_loc[1]}"
         
+        if tile_key in self.tilemap:
+            tile = self.tilemap[tile_key]
+            if tile['type'] == 'final':
+                return True
+        
+        return False
     def extract(self, id_pairs, keep=False):
         matches = []
         for loc in list(self.tilemap.keys()):
@@ -65,7 +77,8 @@ class Tilemap:
         tile_loc = str(int(pos[0] // self.tile_size)) + ';' + str(int(pos[1] // self.tile_size))
         if tile_loc in self.tilemap:
             if self.tilemap[tile_loc]['type'] in PHYSICS_TILES:
-                return self.tilemap[tile_loc]
+                return True  # Cambia esto para devolver True si hay una colisión
+        return False  # Si no hay colisión, devuelve False
     
     def physics_rects_around(self, pos):
         rects = []

@@ -225,7 +225,7 @@ class Juego:
                         self.particles.remove(particle)
                 
                 for enemy in self.enemies.copy():
-                    kill_enemy = self.check_enemy_collision(enemy)
+                    kill_enemy = Player.check_enemy_collision(self.player, enemy)
                     enemy.render(self.display, offset=render_scroll)
                     if kill_enemy:
                         self.enemies.remove(enemy)
@@ -299,26 +299,7 @@ class Juego:
     def change_resolution(self, resolution):
         self.current_resolution = resolution
         self.screen = pygame.display.set_mode(self.current_resolution)
-    def check_enemy_collision(self, enemy):
-        player_rect = self.player.rect()
-        enemy_rect = enemy.rect()
 
-        # Verifica la colisión con el jugador
-        if player_rect.colliderect(enemy_rect):
-            if player_rect.right > enemy_rect.left and self.player.last_movement[0] > 0:
-                # Colisión por la derecha del jugador
-                self.death_count += 1
-                self.handle_enemy_collision(enemy)
-            elif player_rect.left < enemy_rect.right and self.player.last_movement[0] < 0:
-                # Colisión por la izquierda del jugador
-                self.death_count += 1
-                self.handle_enemy_collision(enemy)
-             
-            if player_rect.bottom > enemy_rect.top and self.player.last_movement[1] > 0:
-                # Colisión por arriba del jugador
-                self.death_count += 1
-                return self.handle_enemy_collision(enemy)
-        return False  # Indica que el enemigo no ha sido eliminado
     
     def change_resolution(self, resolution):
         self.current_resolution = resolution

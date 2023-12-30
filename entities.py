@@ -248,13 +248,13 @@ class Player(PhysicsEntity):
         collision_width = 0.9  # Puedes ajustar este valor según sea necesario
         # Verifica la colisión con el jugador
         if player_rect.colliderect(enemy_rect):
-            '''
+
             if player_rect.right - collision_width > enemy_rect.left/1.2 and self.last_movement[0] > 0:
                 self.handle_enemy_collision(enemy)
             elif player_rect.left + collision_width < enemy_rect.right/1.2 and self.last_movement[0] < 0:
                 # Colisión por la izquierda del jugador
                 self.handle_enemy_collision(enemy)
-            '''
+
             if player_rect.right - collision_width > enemy_rect.left/1.2 and enemy.last_movement[0] > 0:
                 # Colisión por la derecha del enemigo
                 self.handle_enemy_collision(enemy)
@@ -265,9 +265,9 @@ class Player(PhysicsEntity):
             else:  
                 return self.rect().colliderect(enemy.rect())
 
-
     def handle_enemy_collision(self, enemy):
-        # Llama a game_over_menu y captura la opción seleccionada
+        # Acciones a realizar cuando hay colisión con un enemigo
+        # Por ejemplo, mostrar el menú de Game Over
         self.game.death_count += 1
         game_over_option = menu.game_over_menu(self.game.screen, self.game)
 
@@ -275,10 +275,11 @@ class Player(PhysicsEntity):
         if game_over_option == "restart":
             self.game.reset_game()
         elif game_over_option == "main_menu":
-            menu.main_menu(self.game.screen)
-        elif game_over_option == "quit":
-            pygame.quit()
-            sys.exit()
+            return menu.main_menu(self.screen, self)
+        elif game_over_option == "continue":
+            # Elimina al enemigo de la lista de enemigos
+            self.game.enemies.remove(enemy)
+            return True  # Indica que el enemigo ha sido eliminado
     def dash(self):
         if not self.dashing:
             self.game.sfx['dash'].play()
