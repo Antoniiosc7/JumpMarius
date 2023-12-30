@@ -270,16 +270,17 @@ class Player(PhysicsEntity):
         # Por ejemplo, mostrar el menú de Game Over
         self.game.death_count += 1
         game_over_option = menu.game_over_menu(self.game.screen, self.game)
-
+        '''
         # Realiza acciones basadas en la opción seleccionada
         if game_over_option == "restart":
             self.game.reset_game()
         elif game_over_option == "main_menu":
-            return menu.main_menu(self.screen, self)
+            return menu.main_menu(self.game.screen, self)
         elif game_over_option == "continue":
             # Elimina al enemigo de la lista de enemigos
             self.game.enemies.remove(enemy)
             return True  # Indica que el enemigo ha sido eliminado
+        '''
     def dash(self):
         if not self.dashing:
             self.game.sfx['dash'].play()

@@ -294,19 +294,5 @@ class Juego:
         self.display_2 = pygame.Surface((resolution[0] // 2, resolution[1] // 2))
         self.clouds = Clouds(self.assets['clouds'], count=16)
         
-    def handle_enemy_collision(self, enemy):
-        # Acciones a realizar cuando hay colisión con un enemigo
-        # Por ejemplo, mostrar el menú de Game Over
-        game_over_option = menu.game_over_menu(self.screen, self)
-
-        # Realiza acciones basadas en la opción seleccionada
-        if game_over_option == "restart":
-            self.reset_game()
-        elif game_over_option == "main_menu":
-            return menu.main_menu(self.screen, self)
-        elif game_over_option == "continue":
-            # Elimina al enemigo de la lista de enemigos
-            self.enemies.remove(enemy)
-            return True  # Indica que el enemigo ha sido eliminado
-        
+      
         
