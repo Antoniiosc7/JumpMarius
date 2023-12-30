@@ -78,23 +78,12 @@ class Tilemap:
         if tile_loc in self.tilemap:
             if self.tilemap[tile_loc]['type'] in PHYSICS_TILES:
                 return self.tilemap[tile_loc]
-            
-    def final_check(self, player_pos):
-        tile_loc = (
-            int(player_pos[0] // self.tile_size),
-            int(player_pos[1] // self.tile_size)
-        )
-
-        # Check if there is a block at the player's tile location
-        if f"{tile_loc[0]};{tile_loc[1]}" in self.tilemap:
-            player_rect = pygame.Rect(player_pos[0], player_pos[1], self.tile_size, self.tile_size)
-
-            # Check if the player's bottom center point is above the block final
-            if player_rect.collidepoint(self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centerx, self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centery) and \
-                    player_rect.bottom <= self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centery:
-                return True
-
-        return False
+    
+    def get_x_of_final_block(self):
+        for loc, tile in self.tilemap.items():
+            if tile['type'] == 'final':
+                return tile['pos'][0] * self.tile_size
+         
 
             
     def physics_rects_around(self, pos):
@@ -126,4 +115,4 @@ class Tilemap:
                 loc = str(x) + ';' + str(y)
                 if loc in self.tilemap:
                     tile = self.tilemap[loc]
-                    surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))
+                    surf.blit(self.game.assets[tile['type']][tile['variant']], (tile['pos'][0] * self.tile_size - offset[0], tile['pos'][1] * self.tile_size - offset[1]))                    

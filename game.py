@@ -107,7 +107,6 @@ class Juego:
     def reset_game(self):
         # Restablecer todas las variables del juego a su estado inicial
         self.movement = [False, False]
-
         # Reiniciar el jugador
         self.player.reset_position()
         self.player.reset_state()
@@ -264,6 +263,10 @@ class Juego:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
+                final = self.tilemap.get_x_of_final_block()
+                if self.player.pos[0] == final:
+                    print("Has ganado")
+                    menu.win_menu(self.screen, self)
                 if self.transition:
                     transition_surf = pygame.Surface(self.display.get_size())
                     pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
@@ -273,10 +276,7 @@ class Juego:
 
 
                 self.display_2.blit(self.display, (0, 0))
-                if self.tilemap.final_check(self.player.pos):
-                    print("¡Has ganado!")
-
-                
+                 
 
                 screenshake_offset = (random.random() * self.screenshake - self.screenshake / 2, random.random() * self.screenshake - self.screenshake / 2)
                 self.screen.blit(pygame.transform.scale(self.display_2, self.screen.get_size()), screenshake_offset)
@@ -294,19 +294,5 @@ class Juego:
         self.display_2 = pygame.Surface((resolution[0] // 2, resolution[1] // 2))
         self.clouds = Clouds(self.assets['clouds'], count=16)
         
-    def handle_enemy_collision(self, enemy):
-        # Acciones a realizar cuando hay colisión con un enemigo
-        # Por ejemplo, mostrar el menú de Game Over
-        game_over_option = menu.game_over_menu(self.screen, self)
-
-        # Realiza acciones basadas en la opción seleccionada
-        if game_over_option == "restart":
-            self.reset_game()
-        elif game_over_option == "main_menu":
-            return menu.main_menu(self.screen, self)
-        elif game_over_option == "continue":
-            # Elimina al enemigo de la lista de enemigos
-            self.enemies.remove(enemy)
-            return True  # Indica que el enemigo ha sido eliminado
-        
+      
         
