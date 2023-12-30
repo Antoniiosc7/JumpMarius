@@ -77,9 +77,26 @@ class Tilemap:
         tile_loc = str(int(pos[0] // self.tile_size)) + ';' + str(int(pos[1] // self.tile_size))
         if tile_loc in self.tilemap:
             if self.tilemap[tile_loc]['type'] in PHYSICS_TILES:
-                return True  # Cambia esto para devolver True si hay una colisión
-        return False  # Si no hay colisión, devuelve False
-    
+                return self.tilemap[tile_loc]
+            
+    def final_check(self, player_pos):
+        tile_loc = (
+            int(player_pos[0] // self.tile_size),
+            int(player_pos[1] // self.tile_size)
+        )
+
+        # Check if there is a block at the player's tile location
+        if f"{tile_loc[0]};{tile_loc[1]}" in self.tilemap:
+            player_rect = pygame.Rect(player_pos[0], player_pos[1], self.tile_size, self.tile_size)
+
+            # Check if the player's bottom center point is above the block final
+            if player_rect.collidepoint(self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centerx, self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centery) and \
+                    player_rect.bottom <= self.tilemap[f"{tile_loc[0]};{tile_loc[1]}"]['rect'].centery:
+                return True
+
+        return False
+
+            
     def physics_rects_around(self, pos):
         rects = []
         for tile in self.tiles_around(pos):
