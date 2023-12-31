@@ -1,21 +1,46 @@
 import pygame
 import sys
 import pandas as pd
+import os
 
 
 def save_resolution_to_csv(resolution):
-    resolution_df = pd.DataFrame([resolution], columns=['Width', 'Height'])
-    resolution_df.to_csv('config.csv', index=False)
-
+    current_data = load_config_from_csv()
+    current_data['Width'], current_data['Height'] = resolution
+    save_config_to_csv(current_data)
 
 def load_resolution_from_csv():
     try:
-        resolution_df = pd.read_csv('config.csv')
-        resolution = (resolution_df['Width'].iloc[0], resolution_df['Height'].iloc[0])
+        config_df = pd.read_csv('config.csv')
+        resolution = (config_df['Width'].iloc[0], config_df['Height'].iloc[0])
         print("Resolution loaded:", resolution)
         return resolution
     except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
         return None
+
+def save_selected_character_to_csv(selected_character):
+    current_data = load_config_from_csv()
+    current_data['Character'] = selected_character
+    save_config_to_csv(current_data)
+
+def load_selected_character_from_csv():
+    try:
+        config_df = pd.read_csv('config.csv')
+        selected_character = config_df['Character'].iloc[0]
+        return selected_character
+    except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
+        return "Character1"  # Valor predeterminado si no se encuentra en el archivo o hay un error
+
+def save_config_to_csv(data):
+    config_df = pd.DataFrame(data)
+    config_df.to_csv('config.csv', index=False)
+
+def load_config_from_csv():
+    try:
+        config_df = pd.read_csv('config.csv')
+        return config_df.to_dict(orient='list')
+    except (FileNotFoundError, pd.errors.EmptyDataError):
+        return {'Width': [], 'Height': [], 'Character': []}
     
 def load_and_scale_background(game):
     # Obtener la resolución del archivo CSV
@@ -34,11 +59,7 @@ def main_menu(screen, game):
     selected_option = 0
     background = load_and_scale_background(game)
     while True:
-        
-        
         screen.blit(background, (0, 0))
-
-
         draw_text(screen, "Bienvenido a Jump Marius", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
         draw_text(screen, "By Antoniiosc7", 28, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 3.1)
 
@@ -68,7 +89,8 @@ def main_menu(screen, game):
                     elif option == "Seleccion de nivel":
                         pass
                     elif option == "Seleccion de personaje":
-                        pass
+                        character_selection_menu_result, new_character = character_selection_menu(screen, game)
+                        
                     elif option == "Configuracion":
                         config_menu_result, new_resolution = config_menu(screen, game)
                         if config_menu_result == "main_menu":
@@ -76,7 +98,7 @@ def main_menu(screen, game):
                                 game.change_resolution(new_resolution)
                                 save_resolution_to_csv(new_resolution)
                                 load_and_scale_background(game)  # Actualizar la imagen de fondo
-                            return "main_menu"
+                            #return "main_menu"
                     elif option == "Salir":
                         pygame.quit()
                         sys.exit()
@@ -95,7 +117,7 @@ def draw_text(screen, text, size, color, x, y, padding_x=10, padding_y=5, death_
     pygame.draw.rect(rect_surface, (255, 255, 255, 128), rect_surface.get_rect(), border_radius=5)
 
     # Superponer el rectángulo sobre la pantalla
-    screen.blit(rect_surface, (text_rect.topleft[0] - padding_x - 1, text_rect.topleft[1] - padding_y-1))
+    screen.blit(rect_surface, (text_rect.topleft[0] - padding_x - 1, text_rect.topleft[1] - padding_y - 1))
     screen.blit(text_surface, text_rect.topleft)
 
     # Mostrar el contador de muertes si se proporciona
@@ -105,6 +127,7 @@ def draw_text(screen, text, size, color, x, y, padding_x=10, padding_y=5, death_
         death_surface = death_font.render(death_text, True, color)
         death_rect = death_surface.get_rect(center=(x, y + text_rect.height + padding_y))
         screen.blit(death_surface, death_rect.topleft)
+
 
 def restart_menu(screen, game):
     options = ["Continuar partida", "Reiniciar partida", "Menu Principal", "Salir"]
@@ -170,7 +193,7 @@ def game_over_menu(screen, game):
             if i == selected_option:
                 size = 28
                 color = (255, 0, 0)
-            draw_text(screen, option, size, color, screen.get_width() // 2, screen.get_height() // 2 + i * 40)
+            draw_text(screen, option, size, color, screen.get_width() // 2, screen.get_height() // 2 + i * 40) 
 
         pygame.display.flip()
 
@@ -197,7 +220,7 @@ def game_over_menu(screen, game):
                         pygame.quit()
                         sys.exit()    
         # Agrega un pequeño descanso para evitar procesar múltiples eventos por un solo toque de tecla
-        pygame.time.delay(100)       
+        #pygame.time.delay(100)       
 
 def config_menu(screen, game):
     options = ["320 x 240", "640 x 480", "1280 x 960", "Volver al menú principal"]
@@ -283,7 +306,96 @@ def win_menu(screen, game):
                     elif option == "Salir":
                         pygame.quit()
                         sys.exit()
+                        
+def character_selection_menu(screen, game):
+    characters = ["Ninja1", "Ninja2", "Ninja3"]
+    selected_character = characters.index(game.get_selected_character())
+    character_images = {}
 
+    # Obtener la resolución actual del archivo CSV
+    resolution = load_resolution_from_csv()
+
+    # Definir dimensiones de personajes según la resolución
+    if resolution == (1280, 960):
+        character_dimensions = (80, 150)
+        side_character_dimensions = (int(80 * 0.85), int(150 * 0.85))  # Reducción del 15%
+    elif resolution == (640, 480):
+        character_dimensions = (40, 75)
+        side_character_dimensions = (int(40 * 0.85), int(75 * 0.85))  # Reducción del 15%
+    elif resolution == (320, 240):
+        character_dimensions = (20, 38)
+        side_character_dimensions = (int(20 * 0.85), int(38 * 0.85))  # Reducción del 15%
+    else:
+        # Resolución por defecto
+        character_dimensions = (80, 150)
+        side_character_dimensions = (int(80 * 0.85), int(150 * 0.85))  # Reducción del 15%
+
+    # Cargar y escalar la imagen de fondo
+    background = pygame.image.load("recursos/character_selection.png").convert()
+
+    if resolution:
+        background = pygame.transform.scale(background, resolution)
+
+    for character in characters:
+        image_path = os.path.join("recursos/visualizaciones/", f"{character}.png")
+        if os.path.exists(image_path):
+            character_images[character] = pygame.image.load(image_path)
+        else:
+            print("No se encontró la imagen para:", character)
+
+    while True:
+        screen.blit(background, (0, 0))
+
+        draw_text(screen, "Selecciona un personaje", 55, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
+
+        # Dibujar personajes adyacentes
+        for i in range(-1, 2):
+            if i == 0:  # Omitir el personaje central
+                continue
+
+            index = (selected_character + i) % len(characters)
+            x_position = screen.get_width() // 2 + i * (screen.get_width()//12)
+            size = character_dimensions if i != 0 else (int(character_dimensions[0] // 1.25), int(character_dimensions[1] // 1.25))
+
+            draw_character(screen, characters[index], character_images.get(characters[index]),
+                           x_position, screen.get_height() // 1.5, size, draw_name=True)
+
+        draw_text(screen, "Pulsa Enter o Espacio para seleccionar", 24, (0, 0, 0),
+                  screen.get_width() // 2, screen.get_height() - 50)
+
+        # Dibujar el personaje central con nombre
+        draw_character(screen, characters[selected_character], character_images.get(characters[selected_character]),
+                       screen.get_width() // 2, screen.get_height() // 2, character_dimensions, draw_name=True)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RIGHT:
+                    selected_character = (selected_character + 1) % len(characters)
+                elif event.key == pygame.K_LEFT:
+                    selected_character = (selected_character - 1) % len(characters)
+                elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE]:
+                    new_character = characters[selected_character]
+                    game.set_selected_character(new_character)
+                    save_selected_character_to_csv(new_character)
+                    return "main_menu", new_character
+                elif event.key == pygame.K_ESCAPE:
+                    return "main_menu", None
+
+def draw_character(screen, character, image, x, y, size, draw_name=False):
+    # Dibuja la imagen del personaje
+    if image is not None:
+        image = pygame.transform.scale(image, size)
+        rect = image.get_rect(center=(x, y))
+        screen.blit(image, rect.topleft)
+
+        # Dibuja el nombre del personaje si es necesario
+        if draw_name:
+            draw_text(screen, character, 24, (0, 0, 0), x, y + size[1] // 2 + 10)
 
 if __name__ == "__main__":
     from game import Juego

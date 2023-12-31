@@ -240,30 +240,28 @@ class Player(PhysicsEntity):
             self.air_time = 5
             return True
     # Función para verificar colisiones con enemigos
+    # Función para verificar colisiones con enemigos
     def check_enemy_collision(self, enemy):
         player_rect = self.rect()
         enemy_rect = enemy.rect()
-        #enemy_rect.y += 5  # Ajusta la hitbox de impacto por arriba y abajo
-        # Ajusta la hitbox de impacto por la izquierda y derecha
-        collision_width = 0.9  # Puedes ajustar este valor según sea necesario
-        # Verifica la colisión con el jugador
+        collision_width = 0.9
+
         if player_rect.colliderect(enemy_rect):
-
-            if player_rect.right - collision_width > enemy_rect.left/1.5 and self.last_movement[0] > 0:
-                self.handle_enemy_collision(enemy)
-            elif player_rect.left + collision_width < enemy_rect.right/1.5 and self.last_movement[0] < 0:
-                # Colisión por la izquierda del jugador
-                self.handle_enemy_collision(enemy)
-
-            if player_rect.right - collision_width > enemy_rect.left/1.5 and enemy.last_movement[0] > 0:
-                # Colisión por la derecha del enemigo
-                self.handle_enemy_collision(enemy)
-            elif player_rect.left + collision_width < enemy_rect.right/1.5 and enemy.last_movement[0] < 0:
-                # Colisión por la izquierda del enemigo
-                self.handle_enemy_collision(enemy)
-                
-            else:  
+            if not self.collisions['up'] and not self.collisions['down']:
+                # Jugador en el aire
                 return self.rect().colliderect(enemy.rect())
+            else:
+                # Jugador en el suelo
+                if player_rect.right - collision_width > enemy_rect.left / 1.5 and self.last_movement[0] > 0:
+                    self.handle_enemy_collision(enemy)
+                elif player_rect.left + collision_width < enemy_rect.right / 1.5 and self.last_movement[0] < 0:
+                    self.handle_enemy_collision(enemy)
+
+                if player_rect.right - collision_width > enemy_rect.left / 1.5 and enemy.last_movement[0] > 0:
+                    self.handle_enemy_collision(enemy)
+                elif player_rect.left + collision_width < enemy_rect.right / 1.5 and enemy.last_movement[0] < 0:
+                    self.handle_enemy_collision(enemy)
+
 
     def handle_enemy_collision(self, enemy):
         # Acciones a realizar cuando hay colisión con un enemigo
