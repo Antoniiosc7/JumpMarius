@@ -3,7 +3,7 @@ from utils import load_image, load_images, Animation
 from tilemap import Tilemap
 from clouds import Clouds
 from spark import Spark
-import random, math, sys, pygame, menu
+import random, math, sys, pygame, menu, os
 from particle import Particle
 class Juego:
     def __init__(self, resolution=None):
@@ -13,7 +13,7 @@ class Juego:
             self.screen = pygame.display.set_mode(self.current_resolution)
         else:
             self.current_resolution = resolution
-
+        self.selected_character = "Ninja1"  
         self.screen = pygame.display.set_mode(self.current_resolution)
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
@@ -22,7 +22,8 @@ class Juego:
         self.current_resolution = self.screen_display
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
-        self.icon = pygame.image.load("recursos/icono.png")
+        image_path = os.path.join("recursos/visualizaciones/", f"{self.selected_character}.png")
+        self.icon = pygame.image.load(image_path)
         pygame.display.set_icon(self.icon)
         self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
@@ -285,8 +286,11 @@ class Juego:
     def change_resolution(self, resolution):
         self.current_resolution = resolution
         self.screen = pygame.display.set_mode(self.current_resolution)
-
-    
+    def get_selected_character(self):
+        return self.selected_character
+    def set_selected_character(self, new_character):
+        self.selected_character = new_character
+        print("Establecido como personaje: " + self.selected_character)
     def change_resolution(self, resolution):
         self.current_resolution = resolution
         self.screen = pygame.display.set_mode(self.current_resolution)
