@@ -28,7 +28,7 @@ class Juego:
         self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
         self.movement = [False, False]
-        
+        self.puntuacion = 0  
         #self.display = pygame.Surface((320, 240))
         
         self.assets = {
@@ -131,7 +131,8 @@ class Juego:
             while True:               
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)
-            
+
+        
                 if not len(self.enemies):
                     self.transition += 1
                     if self.transition > 30:
@@ -275,7 +276,10 @@ class Juego:
                     self.display.blit(transition_surf, (0, 0))
                 player_rect = pygame.Rect(self.player.pos[0], self.player.pos[1], self.player.size[0], self.player.size[1])
 
-
+                font = pygame.font.Font(None, 36)
+                text = font.render(f"Puntuacion: {self.puntuacion}", True, (255, 255, 255))
+                text_rect = text.get_rect()
+                text_rect.topleft = (self.current_resolution[0] - text_rect.width - 10, 10)
                 self.display_2.blit(self.display, (0, 0))
                  
 
