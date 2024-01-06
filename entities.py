@@ -1,8 +1,8 @@
 import math
 import random
-import menu
+import menus.main as main
 import pygame, sys
-
+import menus.gameOver as gameOver
 from particle import Particle
 from spark import Spark
 
@@ -155,13 +155,13 @@ class Player(PhysicsEntity):
             if not self.game.dead:
                 self.game.screenshake = max(16, self.game.screenshake)
             self.game.dead += 1
-            game_over_option = menu.game_over_menu(self.game.screen, self.game)
+            game_over_option = gameOver.game_over_menu(self.game.screen, self.game)
 
             # Realiza acciones basadas en la opción seleccionada
             if game_over_option == "restart":
                 self.game.reset_game()
             elif game_over_option == "main_menu":
-                return menu.main_menu(self.game.screen)
+                return main.main_menu(self.game.screen)
         
         if self.collisions['down']:
             self.air_time = 0
@@ -268,7 +268,7 @@ class Player(PhysicsEntity):
         # Por ejemplo, mostrar el menú de Game Over
         if self.is_falling_on_enemy(enemy):
             self.game.death_count += 1
-            menu.game_over_menu(self.game.screen, self.game)
+            gameOver.game_over_menu(self.game.screen, self.game)
 
     def is_falling_on_enemy(self, enemy):
         return self.pos[1] < enemy.pos[1] and abs(self.pos[1] - enemy.pos[1]) < self.size[1] / 2
