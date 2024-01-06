@@ -77,13 +77,20 @@ class Juego:
         self.level = 0
         self.tilemap = Tilemap(self, tile_size=16)
         #self.tilemap.load('map.json')
-        self.load_level(1)
+        self.load_level()
         self.screenshake = 0
         self.scroll = [0, 0]
     
-    def load_level(self, map_id):
+    def load_level(self):
+        selected_level = menu.load_selected_level_from_csv()
+
         #self.tilemap.load('mapas/map' + str(map_id)    + '.json')
-        self.tilemap.load('map.json')
+        map_path = os.path.join('mapas/', f'{selected_level}.json')
+
+            # Cargar el nivel desde el archivo JSON
+        self.tilemap.load(map_path)
+
+        #self.tilemap.load('map.json')
         self.leaf_spawners = []
         for tree in self.tilemap.extract([('large_decor', 2)], keep=True):
             self.leaf_spawners.append(pygame.Rect(4 + tree['pos'][0], 4 + tree['pos'][1], 23, 13))
@@ -114,7 +121,7 @@ class Juego:
 
         # Reiniciar el mapa de tiles
         self.tilemap = Tilemap(self, tile_size=16)
-        self.load_level(1)  # Asegúrate de cargar el nivel nuevamente
+        self.load_level()  # Asegúrate de cargar el nivel nuevamente
 
         # Reiniciar las nubes
         self.clouds = Clouds(self.assets['clouds'], count=16)
@@ -155,7 +162,7 @@ class Juego:
                     if self.dead >= 10:
                         self.transition = min(30, self.transition + 1)
                     if self.dead > 40:
-                        self.load_level(self.level)
+                        self.load_level()
                 
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
                 self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30

@@ -53,7 +53,33 @@ def load_and_scale_background(game):
         background = pygame.transform.scale(background, resolution)
 
     return background
+def get_available_levels():
+    map_folder = "mapas"
+    if os.path.exists(map_folder):
+        return [file[:-5] for file in os.listdir(map_folder) if file.endswith(".json")]
+    else:
+        return []
 
+# Añade esta función para actualizar el nivel seleccionado en el archivo config.csv
+def save_selected_level_to_csv(selected_level):
+    current_data = load_config_from_csv()
+    current_data['Nivel'] = selected_level
+    save_config_to_csv(current_data)
+
+# Añade esta función para cargar el nivel seleccionado desde el archivo config.csv
+def load_selected_level_from_csv():
+    try:
+        config_df = pd.read_csv('config.csv')
+        if 'Nivel' in config_df.columns:
+            selected_level = config_df['Nivel'].iloc[0]
+            return selected_level
+        else:
+            print("La columna 'Nivel' no está presente en el archivo CSV.")
+            return None
+    except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
+        return None
+
+    
 def main_menu(screen, game):
     options = ["Comenzar nueva partida", "Seleccion de nivel", "Seleccion de personaje", "Configuracion", "Salir"]
     selected_option = 0
@@ -87,7 +113,10 @@ def main_menu(screen, game):
                     if option == "Comenzar nueva partida":
                         return 'restart'
                     elif option == "Seleccion de nivel":
-                        pass
+                        level_selection_menu_result, selected_level = level_selection_menu(screen, game)
+                        if level_selection_menu_result == "main_menu":
+                            if selected_level:
+                                save_selected_level_to_csv(selected_level)
                     elif option == "Seleccion de personaje":
                         character_selection_menu_result, new_character = character_selection_menu(screen, game)
                         
@@ -396,7 +425,43 @@ def draw_character(screen, character, image, x, y, size, draw_name=False):
         # Dibuja el nombre del personaje si es necesario
         if draw_name:
             draw_text(screen, character, 24, (0, 0, 0), x, y + size[1] // 2 + 10)
+def level_selection_menu(screen, game):
+    levels = get_available_levels()
 
+    if not levels:
+        print("No hay niveles disponibles.")
+        return "main_menu", None
+
+    selected_level = levels.index(load_selected_level_from_csv()) if levels else 0
+
+    while True:
+        screen.fill((255, 255, 255))
+
+        draw_text(screen, "Seleccion de nivel", 36, (0, 0, 0), screen.get_width() // 2, screen.get_height() // 4)
+
+        for i, level in enumerate(levels):
+            size = 24
+            color = (0, 0, 0)
+            if i == selected_level:
+                size = 28
+                color = (255, 0, 0)
+            draw_text(screen, level, size, color, screen.get_width() // 2, screen.get_height() // 2 + i * 40)
+
+        pygame.display.flip()
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    selected_level = (selected_level - 1) % len(levels)
+                elif event.key == pygame.K_DOWN:
+                    selected_level = (selected_level + 1) % len(levels)
+                elif event.key in [pygame.K_RETURN, pygame.K_KP_ENTER, pygame.K_SPACE]:
+                    return "main_menu", levels[selected_level]
+                elif event.key == pygame.K_ESCAPE:
+                    return "main_menu", None
 if __name__ == "__main__":
     from game import Juego
 
