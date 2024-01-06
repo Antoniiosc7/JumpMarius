@@ -109,7 +109,6 @@ class Juego:
 
         self.scroll = [0, 0]
         self.dead = 0
-        self.transition = -30
 
         
     def reset_game(self):
@@ -137,18 +136,7 @@ class Juego:
             menu.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
             while True:               
                 self.display.blit(self.assets['background'], (0, 0))
-                self.screenshake = max(0, self.screenshake - 1)
-
-        
-                if not len(self.enemies):
-                    self.transition += 1
-                    if self.transition > 30:
-                        #self.level = min(self.level + 1, len(os.listdir('data/maps')) - 1)
-                        #self.load_level(self.level)
-                        pass
-                if self.transition < 0:
-                    self.transition += 1
-                
+                self.screenshake = max(0, self.screenshake - 1)               
                 if self.dead:
                     self.dead += 1
                     self.death_count += 1
@@ -159,8 +147,6 @@ class Juego:
                         self.reset_game()
                     elif game_over_option == "main_menu":
                         return menu.main_menu(self.screen, self)
-                    if self.dead >= 10:
-                        self.transition = min(30, self.transition + 1)
                     if self.dead > 40:
                         self.load_level()
                 
@@ -276,11 +262,7 @@ class Juego:
                 if self.player.pos[0] == final:
                     print("Has ganado")
                     menu.win_menu(self.screen, self)
-                if self.transition:
-                    transition_surf = pygame.Surface(self.display.get_size())
-                    pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
-                    transition_surf.set_colorkey((255, 255, 255))
-                    self.display.blit(transition_surf, (0, 0))
+    
                 player_rect = pygame.Rect(self.player.pos[0], self.player.pos[1], self.player.size[0], self.player.size[1])
 
                 font = pygame.font.Font(None, 36)
