@@ -248,8 +248,9 @@ class Player(PhysicsEntity):
 
         if player_rect.colliderect(enemy_rect):
             if not self.collisions['up'] and not self.collisions['down']:
-                # Jugador en el aire
-                return self.rect().colliderect(enemy.rect())
+                # Jugador en el aire y sobre el enemigo
+                if self.pos[1] < enemy.pos[1] and abs(self.pos[1] - enemy.pos[1]) < self.size[1] / 2:
+                    return True
             else:
                 # Jugador en el suelo
                 if player_rect.right - collision_width > enemy_rect.left / 1.5 and self.last_movement[0] > 0:
@@ -262,12 +263,15 @@ class Player(PhysicsEntity):
                 elif player_rect.left + collision_width < enemy_rect.right / 1.5 and enemy.last_movement[0] < 0:
                     self.handle_enemy_collision(enemy)
 
-
     def handle_enemy_collision(self, enemy):
         # Acciones a realizar cuando hay colisión con un enemigo
         # Por ejemplo, mostrar el menú de Game Over
-        self.game.death_count += 1
-        game_over_option = menu.game_over_menu(self.game.screen, self.game)
+        if self.is_falling_on_enemy(enemy):
+            self.game.death_count += 1
+            menu.game_over_menu(self.game.screen, self.game)
+
+    def is_falling_on_enemy(self, enemy):
+        return self.pos[1] < enemy.pos[1] and abs(self.pos[1] - enemy.pos[1]) < self.size[1] / 2
 
     def dash(self):
         if not self.dashing:
