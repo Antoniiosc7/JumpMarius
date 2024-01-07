@@ -4,10 +4,7 @@ from tilemap import Tilemap
 from clouds import Clouds
 from spark import Spark
 import random, math, sys, pygame, os, utils
-import menus.main as main
-import menus.restart as restart
-import menus.win as win
-import menus.gameOver as gameOver
+import menus.index as menus
 from particle import Particle
 class Juego:
     def __init__(self, resolution=None):
@@ -134,20 +131,20 @@ class Juego:
     def run(self):
         while True:
             
-            main.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
+            menus.index(self.screen, self, 1)  # Ejecutar el menú antes del bucle principal del juego
             while True:               
                 self.display.blit(self.assets['background'], (0, 0))
                 self.screenshake = max(0, self.screenshake - 1)               
                 if self.dead:
                     self.dead += 1
                     self.death_count += 1
-                    game_over_option = gameOver.game_over_menu(self.screen, self)
+                    game_over_option = menus.index(self.screen, self,3)
 
                     # Realiza acciones basadas en la opción seleccionada
                     if game_over_option == "restart":
                         self.reset_game()
                     elif game_over_option == "main_menu":
-                        return main.main_menu(self.screen, self)
+                        return menus.index(self.screen, self,1)
                     if self.dead > 40:
                         self.load_level()
                 
@@ -247,7 +244,7 @@ class Juego:
                         if event.key == pygame.K_x:
                             self.player.dash()
                         elif event.key == pygame.K_ESCAPE:
-                            restart_option = restart.restart_menu(self.screen, self)  # Llama a la función del menú de reinicio
+                            restart_option = menus.index(self.screen, self,2)  # Llama a la función del menú de reinicio
                             if restart_option == "restart":
                                 self.reset_game()
                                 break  # Salir del bucle interno para reiniciar el juego
@@ -262,7 +259,7 @@ class Juego:
                 final = self.tilemap.get_x_of_final_block()
                 if self.player.pos[0] == final:
                     print("Has ganado")
-                    win.win_menu(self.screen, self)
+                    menus.index(self.screen, self,4)
     
                 player_rect = pygame.Rect(self.player.pos[0], self.player.pos[1], self.player.size[0], self.player.size[1])
 
