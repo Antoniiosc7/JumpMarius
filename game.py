@@ -36,6 +36,10 @@ class Juego:
             'grass': load_images('tiles/grass'),
             'large_decor': load_images('tiles/large_decor'),
             'stone': load_images('tiles/stone'),
+            'hierba': load_images('tiles/newTiles/blocksHierba'),
+            'nevados': load_images('tiles/newTiles/blocksNevados'),
+            'quemados': load_images('tiles/newTiles/blocksQuemados'),
+            'normal': load_images('tiles/newTiles/normalBlocks'),
             'player': load_image('entities/player.png'),
             'background': load_image('background.png'),
             'clouds': load_images('clouds'),
@@ -149,7 +153,7 @@ class Juego:
                         self.load_level()
                 
                 self.scroll[0] += (self.player.rect().centerx - self.display.get_width() / 2 - self.scroll[0]) / 30
-                self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
+                #self.scroll[1] += (self.player.rect().centery - self.display.get_height() / 2 - self.scroll[1]) / 30
                 render_scroll = (int(self.scroll[0]), int(self.scroll[1]))
                 
                 for rect in self.leaf_spawners:
@@ -256,7 +260,9 @@ class Juego:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
-                final = self.tilemap.get_x_of_final_block()
+                final = self.tilemap.get_x_of_final_block() -1
+                print("Final: ", final)
+                print("Player: ", self.player.pos[0])
                 if self.player.pos[0] == final:
                     print("Has ganado")
                     menus.index(self.screen, self,4)
