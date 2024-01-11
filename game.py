@@ -3,7 +3,8 @@ from utils import load_image, load_images, Animation
 from tilemap import Tilemap
 from clouds import Clouds
 from spark import Spark
-import random, math, sys, pygame, menu, os
+import random, math, sys, pygame, os, utils
+import menus.index as menus
 from particle import Particle
 class Juego:
     def __init__(self, resolution=None):
@@ -29,7 +30,6 @@ class Juego:
         self.clock = pygame.time.Clock()
         self.movement = [False, False]
         self.puntuacion = 0  
-        #self.display = pygame.Surface((320, 240))
         
         self.assets = {
             'decor': load_images('tiles/decor'),
@@ -71,18 +71,16 @@ class Juego:
         self.sfx['dead'].set_volume(0.3)
         self.sfx['fondo'].set_volume(0.1)
         
-        self.clouds = Clouds(self.assets['clouds'], count=16)
-        
+        self.clouds = Clouds(self.assets['clouds'], count=16)  
         self.player = Player(self, (50, 50), (8, 15))
         self.level = 0
         self.tilemap = Tilemap(self, tile_size=16)
-        #self.tilemap.load('map.json')
         self.load_level()
         self.screenshake = 0
         self.scroll = [0, 0]
     
     def load_level(self):
-        selected_level = menu.load_selected_level_from_csv()
+        selected_level = utils.load_selected_level_from_csv()
 
         #self.tilemap.load('mapas/map' + str(map_id)    + '.json')
         map_path = os.path.join('mapas/', f'{selected_level}.json')
@@ -109,7 +107,6 @@ class Juego:
 
         self.scroll = [0, 0]
         self.dead = 0
-        self.transition = -30
 
         
     def reset_game(self):
@@ -134,33 +131,20 @@ class Juego:
     def run(self):
         while True:
             
-            menu.main_menu(self.screen, self)  # Ejecutar el menú antes del bucle principal del juego
+            menus.index(self.screen, self, 1)  # Ejecutar el menú antes del bucle principal del juego
             while True:               
                 self.display.blit(self.assets['background'], (0, 0))
-                self.screenshake = max(0, self.screenshake - 1)
-
-        
-                if not len(self.enemies):
-                    self.transition += 1
-                    if self.transition > 30:
-                        #self.level = min(self.level + 1, len(os.listdir('data/maps')) - 1)
-                        #self.load_level(self.level)
-                        pass
-                if self.transition < 0:
-                    self.transition += 1
-                
+                self.screenshake = max(0, self.screenshake - 1)               
                 if self.dead:
                     self.dead += 1
                     self.death_count += 1
-                    game_over_option = menu.game_over_menu(self.screen, self)
+                    game_over_option = menus.index(self.screen, self,3)
 
                     # Realiza acciones basadas en la opción seleccionada
                     if game_over_option == "restart":
                         self.reset_game()
                     elif game_over_option == "main_menu":
-                        return menu.main_menu(self.screen, self)
-                    if self.dead >= 10:
-                        self.transition = min(30, self.transition + 1)
+                        return menus.index(self.screen, self,1)
                     if self.dead > 40:
                         self.load_level()
                 
@@ -260,7 +244,7 @@ class Juego:
                         if event.key == pygame.K_x:
                             self.player.dash()
                         elif event.key == pygame.K_ESCAPE:
-                            restart_option = menu.restart_menu(self.screen, self)  # Llama a la función del menú de reinicio
+                            restart_option = menus.index(self.screen, self,2)  # Llama a la función del menú de reinicio
                             if restart_option == "restart":
                                 self.reset_game()
                                 break  # Salir del bucle interno para reiniciar el juego
@@ -275,12 +259,8 @@ class Juego:
                 final = self.tilemap.get_x_of_final_block()
                 if self.player.pos[0] == final:
                     print("Has ganado")
-                    menu.win_menu(self.screen, self)
-                if self.transition:
-                    transition_surf = pygame.Surface(self.display.get_size())
-                    pygame.draw.circle(transition_surf, (255, 255, 255), (self.display.get_width() // 2, self.display.get_height() // 2), (30 - abs(self.transition)) * 8)
-                    transition_surf.set_colorkey((255, 255, 255))
-                    self.display.blit(transition_surf, (0, 0))
+                    menus.index(self.screen, self,4)
+    
                 player_rect = pygame.Rect(self.player.pos[0], self.player.pos[1], self.player.size[0], self.player.size[1])
 
                 font = pygame.font.Font(None, 36)
