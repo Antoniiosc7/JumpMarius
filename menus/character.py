@@ -4,7 +4,7 @@ import menus.menuUtils as menuUtils
 import menus.main as main
 import sys, os
 def character_selection_menu(screen, game):
-    characters = ["Ninja1", "Ninja2", "Ninja3"]
+    characters = ["Player", "Player1", "Player2"]
     selected_character = characters.index(game.get_selected_character())
     character_images = {}
 

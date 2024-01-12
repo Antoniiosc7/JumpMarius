@@ -14,7 +14,7 @@ class Juego:
             self.screen = pygame.display.set_mode(self.current_resolution)
         else:
             self.current_resolution = resolution
-        self.selected_character = "Ninja1"  
+        self.selected_character = "Player1"  
         self.screen = pygame.display.set_mode(self.current_resolution)
         pygame.mixer.pre_init(44100, -16, 2, 2048)
         pygame.mixer.init()
@@ -24,13 +24,14 @@ class Juego:
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         image_path = os.path.join("recursos/visualizaciones/", f"{self.selected_character}.png")
-        self.icon = pygame.image.load(image_path)
+        self.icon = pygame.image.load("recursos/icono.png")
         pygame.display.set_icon(self.icon)
         self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
         self.movement = [False, False]
         self.puntuacion = 0  
-        
+
+
         self.assets = {
             'decor': load_images('tiles/decor'),
             'grass': load_images('tiles/grass'),
@@ -74,7 +75,7 @@ class Juego:
         self.sfx['jump'].set_volume(0.7)
         self.sfx['dead'].set_volume(0.3)
         self.sfx['fondo'].set_volume(0.1)
-        
+        self.load_configuration()
         self.clouds = Clouds(self.assets['clouds'], count=16)  
         self.player = Player(self, (50, 50), (8, 15))
         self.level = 0
@@ -85,10 +86,11 @@ class Juego:
     
     def load_level(self):
         selected_level = utils.load_selected_level_from_csv()
-
+        selected_character = utils.load_selected_character_from_csv()
+        self.load_configuration()
         #self.tilemap.load('mapas/map' + str(map_id)    + '.json')
         map_path = os.path.join('mapas/', f'{selected_level}.json')
-
+        self.selected_character = selected_character
             # Cargar el nivel desde el archivo JSON
         self.tilemap.load(map_path)
 
@@ -112,7 +114,28 @@ class Juego:
         self.scroll = [0, 0]
         self.dead = 0
 
+    def load_configuration(self):
         
+        print("player seleccionado :", self.selected_character )
+        # Cargar configuración desde el archivo config.csv
+        config_path = 'config.csv'
+        with open(config_path, 'r') as config_file:
+            lines = config_file.readlines()
+            for line in lines:
+                values = list(map(str.strip, line.split(',')))
+                if len(values) == 2:
+                    key, value = values
+                    if key == 'Character':
+                        self.selected_character = value
+
+        # Actualizar las rutas de las imágenes y animaciones según el personaje seleccionado
+        character_path = f'entities/{self.selected_character.lower()}'
+        self.assets['player'] = load_image(f'{character_path}/player.png')
+        self.assets['player/idle'] = Animation(load_images(f'{character_path}/idle'), img_dur=6)
+        self.assets['player/run'] = Animation(load_images(f'{character_path}/run'), img_dur=4)
+        self.assets['player/jump'] = Animation(load_images(f'{character_path}/jump'))
+        self.assets['player/slide'] = Animation(load_images(f'{character_path}/slide'))
+        self.assets['player/wall_slide'] = Animation(load_images(f'{character_path}/wall_slide'))
     def reset_game(self):
         # Restablecer todas las variables del juego a su estado inicial
         self.movement = [False, False]
@@ -260,10 +283,10 @@ class Juego:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
-                final = self.tilemap.get_x_of_final_block() -1
-                print("Final: ", final)
-                print("Player: ", self.player.pos[0])
-                if self.player.pos[0] == final:
+                final = self.tilemap.get_x_of_final_block() -8
+                #print("Final: ", final)
+                #print("Player: ", self.player.pos[0])
+                if self.player.pos[0] >= final:
                     print("Has ganado")
                     menus.index(self.screen, self,4)
     
