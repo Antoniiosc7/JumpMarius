@@ -24,7 +24,7 @@ class Juego:
         self.display = pygame.Surface((320, 240), pygame.SRCALPHA)
         self.display_2 = pygame.Surface((320, 240))
         image_path = os.path.join("recursos/visualizaciones/", f"{self.selected_character}.png")
-        self.icon = pygame.image.load("recursos/icono.png")
+        self.icon = pygame.image.load("recursos/logo.png")
         pygame.display.set_icon(self.icon)
         self.death_count = 0  # Contador de muertes
         self.clock = pygame.time.Clock()
@@ -283,7 +283,7 @@ class Juego:
                             self.movement[0] = False
                         elif event.key == pygame.K_RIGHT:
                             self.movement[1] = False
-                final = self.tilemap.get_x_of_final_block() -8
+                final = self.tilemap.get_x_of_final_block() - 8
                 #print("Final: ", final)
                 #print("Player: ", self.player.pos[0])
                 if self.player.pos[0] >= final:
