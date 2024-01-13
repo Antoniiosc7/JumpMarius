@@ -24,7 +24,11 @@ class Editor:
             'large_decor': load_images('tiles/large_decor'),
             'stone': load_images('tiles/stone'),
             'spawners': load_images('tiles/spawners'),
-            'final': load_images('tiles/final')
+            'final': load_images('tiles/final'),
+            'hierba': load_images('tiles/newTiles/blocksHierba'),
+            'nevados': load_images('tiles/newTiles/blocksNevados'),
+            'quemados': load_images('tiles/newTiles/blocksQuemados'),
+            'normal': load_images('tiles/newTiles/normalBlocks'),
         }
 
         self.movement = [False, False, False, False]

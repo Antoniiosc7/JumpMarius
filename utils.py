@@ -89,6 +89,17 @@ def load_selected_level_from_csv():
             return None
     except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
         return None
+def load_selected_character_from_csv():
+    try:
+        config_df = pd.read_csv('config.csv')
+        if 'Character' in config_df.columns:
+            selected_character = config_df['Character'].iloc[0]
+            return selected_character
+        else:
+            print("La columna 'Nivel' no está presente en el archivo CSV.")
+            return None
+    except (FileNotFoundError, pd.errors.EmptyDataError, IndexError, ValueError):
+        return None
 class Animation:
     def __init__(self, images, img_dur=5, loop=True):
         self.images = images
